@@ -111,16 +111,6 @@ module.exports = function (src, replace, options){
       // selector
       if (prefix && node.type === 'rule') {
         var PREFIXRE = /(,?\s*(?::root\s)?\s*)([^,]+)/gi;
-        //var selectors = node.selector.split(/\s*,\s*/);
-        //
-        //node.selector = selectors.map(function (selector){
-        //  // handle :root selector {}
-        //  if (selector.indexOf(':root') === 0) {
-        //    return selector.replace(':root', ':root ' + prefix);
-        //  }
-        //
-        //  return prefix + ' ' + selector;
-        //}).join(', ');
 
         node.selector = node.selector.replace(PREFIXRE, '$1' + prefix + ' $2');
       }
