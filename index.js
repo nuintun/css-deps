@@ -20,7 +20,7 @@ module.exports = function (src, replace, options){
   }
 
   try {
-    var ast = options.parse(src);
+    var ast = options.parse(src, options);
   } catch (error) {
     return replace ? src : [];
   }
@@ -78,42 +78,49 @@ module.exports = function (src, replace, options){
 
         return;
       }
+    }
 
-      // declaration
-      if (onpath && node.type === 'decl') {
-        var URLRES = [
-          /url\(\s*['"]?([^"')]+)["']?\s*\)/gi,
-          /AlphaImageLoader\(\s*src\s*=\s*['"]?([^"')]+)["']?\s*[,)]/gi
-        ];
+    // declaration
+    if (onpath && node.type === 'decl') {
+      var URLRES = [
+        /url\(\s*['"]?([^"')]+)["']?\s*\)/gi,
+        /AlphaImageLoader\(\s*src\s*=\s*['"]?([^"')]+)["']?\s*[,)]/gi
+      ];
 
-        URLRES.some(function (pattern){
-          if (pattern.test(node.value)) {
-            node.value = node.value.replace(pattern, function (){
-              var source = arguments[0];
-              var url = arguments[1];
-              var path = onpath(url, node.prop);
+      URLRES.some(function (pattern){
+        if (pattern.test(node.value)) {
+          node.value = node.value.replace(pattern, function (){
+            var source = arguments[0];
+            var url = arguments[1];
+            var path = onpath(url, node.prop);
 
-              // replace resource path
-              if (util.string(path) && path.trim()) {
-                return source.replace(url, path);
-              } else {
-                return source;
-              }
-            });
+            // replace resource path
+            if (util.string(path) && path.trim()) {
+              return source.replace(url, path);
+            } else {
+              return source;
+            }
+          });
 
-            return true;
-          }
-        });
+          return true;
+        }
+      });
 
-        return;
-      }
+      return;
+    }
 
-      // selector
-      if (prefix && node.type === 'rule') {
-        var PREFIXRE = /(,?\s*(?::root\s)?\s*)([^,]+)/gi;
+    // selector
+    if (prefix && node.type === 'rule') {
+      var PREFIXRE = /(,?\s*(?::root\s)?\s*)([^,]+)/gi;
 
-        node.selector = node.selector.replace(PREFIXRE, '$1' + prefix + ' $2');
-      }
+      node.selector = node.selector.replace(PREFIXRE, '$1' + prefix + ' $2');
     }
   });
+
+  // if replace is true, return code else all import
+  if (replace) {
+    return ast.toResult().css;
+  } else {
+    return deps;
+  }
 };
