@@ -20,7 +20,7 @@ module.exports = function (src, replace, options){
   }
 
   try {
-    var ast = options.parse(src, options);
+    var ast = options.parse(src);
   } catch (error) {
     return replace ? src : [];
   }
