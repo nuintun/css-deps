@@ -28,11 +28,6 @@ module.exports = function (src, replace, options){
   var deps = [];
   var onpath = options.onpath;
   var prefix = options.prefix;
-  var IMPORTRE = /url\(["']?([^"')]+)["']?\)|['"]([^"')]+)['"]/gi;
-  var URLRES = [
-    /url\(\s*['"]?([^"')]+)["']?\s*\)/gi,
-    /AlphaImageLoader\(\s*src\s*=\s*['"]?([^"')]+)["']?\s*[,)]/gi
-  ];
 
   if (replace) {
     onpath = util.fn(onpath) ? onpath : undefined;
@@ -57,6 +52,8 @@ module.exports = function (src, replace, options){
       }
 
       // import
+      var IMPORTRE = /url\(["']?([^"')]+)["']?\)|['"]([^"')]+)['"]/gi;
+
       if (node.name === 'import' && IMPORTRE.test(node.params)) {
         node.params = node.params.replace(IMPORTRE, function (){
           var source = arguments[0];
@@ -84,6 +81,11 @@ module.exports = function (src, replace, options){
 
       // declaration
       if (onpath && node.type === 'decl') {
+        var URLRES = [
+          /url\(\s*['"]?([^"')]+)["']?\s*\)/gi,
+          /AlphaImageLoader\(\s*src\s*=\s*['"]?([^"')]+)["']?\s*[,)]/gi
+        ];
+
         URLRES.some(function (pattern){
           if (pattern.test(node.value)) {
             node.value = node.value.replace(pattern, function (){
@@ -108,16 +110,19 @@ module.exports = function (src, replace, options){
 
       // selector
       if (prefix && node.type === 'rule') {
-        var selectors = node.selector.split(/\s*,\s*/);
+        var PREFIXRE = /(,?\s*(?::root\s)?\s*)([^,]+)/gi;
+        //var selectors = node.selector.split(/\s*,\s*/);
+        //
+        //node.selector = selectors.map(function (selector){
+        //  // handle :root selector {}
+        //  if (selector.indexOf(':root') === 0) {
+        //    return selector.replace(':root', ':root ' + prefix);
+        //  }
+        //
+        //  return prefix + ' ' + selector;
+        //}).join(', ');
 
-        node.selector = selectors.map(function (selector){
-          // handle :root selector {}
-          if (selector.indexOf(':root') === 0) {
-            return selector.replace(':root', ':root ' + prefix);
-          }
-
-          return prefix + ' ' + selector;
-        }).join(', ');
+        node.selector = node.selector.replace(PREFIXRE, '$1' + prefix + ' $2');
       }
     }
   });
