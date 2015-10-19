@@ -51,11 +51,73 @@ module.exports = function (src, replace, options){
     if (node.type === 'atrule') {
       // remove chartset
       if (node.name === 'charset') {
-        return node.remove();
+        node.remove();
+
+        return;
       }
 
-      if (node.name === 'import') {
+      // import
+      if (node.name === 'import' && IMPORTRE.test(node.params)) {
+        node.params = node.params.replace(IMPORTRE, function (){
+          var source = arguments[0];
+          var url = arguments[1] || arguments[2];
 
+          // collect dependencies
+          deps.push(url);
+
+          // replace import
+          if (replace) {
+            var path = replace(url, node.name);
+
+            if (util.string(path) && path.trim()) {
+              return source.replace(url, path);
+            } else if (path === false) {
+              node.remove();
+            }
+          }
+
+          return source;
+        });
+
+        return;
+      }
+
+      // declaration
+      if (onpath && node.type === 'decl') {
+        URLRES.some(function (pattern){
+          if (pattern.test(node.value)) {
+            node.value = node.value.replace(pattern, function (){
+              var source = arguments[0];
+              var url = arguments[1];
+              var path = onpath(url, node.prop);
+
+              // replace resource path
+              if (util.string(path) && path.trim()) {
+                return source.replace(url, path);
+              } else {
+                return source;
+              }
+            });
+
+            return true;
+          }
+        });
+
+        return;
+      }
+
+      // selector
+      if (prefix && node.type === 'rule') {
+        var selectors = node.selector.split(/\s*,\s*/);
+
+        node.selector = selectors.map(function (selector){
+          // handle :root selector {}
+          if (selector.indexOf(':root') === 0) {
+            return selector.replace(':root', ':root ' + prefix);
+          }
+
+          return prefix + ' ' + selector;
+        }).join(', ');
       }
     }
   });
