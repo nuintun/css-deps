@@ -1,0 +1,35 @@
+{
+  "name": "css-deps",
+  "version": "1.0.0",
+  "description": "Transform cmd and get cmd dependences",
+  "author": {
+    "name": "nuintun",
+    "email": "nuintun@qq.com"
+  },
+  "homepage": "https://nuintun.github.io/css-deps",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nuintun/css-deps.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nuintun/css-deps/issues",
+    "email": "nuintun@qq.com"
+  },
+  "license": "MIT",
+  "main": "index",
+  "keywords": [
+    "css",
+    "dependencies"
+  ],
+  "dependencies": {
+    "postcss": "^5.0.10"
+  },
+  "devDependencies": {
+  },
+  "readmeFilename": "README.md",
+  "scripts": {
+    "test": "mocha --check-leaks --reporter spec --bail",
+    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --check-leaks --reporter spec",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --check-leaks --reporter dot"
+  }
+}
