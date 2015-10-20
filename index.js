@@ -139,6 +139,8 @@ module.exports = function (src, replace, options){
 
           return true;
         }
+
+        return false;
       });
 
       return;
