@@ -16,12 +16,12 @@ module.exports = function (src, replace, options){
 
   if (Buffer.isBuffer(src)) src = src.toString();
 
-  replace = util.fn(replace) ? replace : undefined;
-
   if (util.object(replace) && !Array.isArray(replace)) {
     options = replace;
     replace = undefined;
   }
+
+  if (replace && !util.fn(replace)) replace = util.noop;
 
   try {
     var ast = postcss.parse(src);
