@@ -48,15 +48,15 @@ module.exports = function (src, replace, options){
   ast.walk(function (node){
     // comments
     if (node.type === 'comment') {
-      if (options.minify === true) {
+      if (options.compress === true) {
         node.remove();
       }
 
       return;
     }
 
-    // minify
-    if (options.minify === true) {
+    // compress
+    if (options.compress === true) {
       // props
       for (var prop in node.raws) {
         if (node.raws.hasOwnProperty(prop)) {
