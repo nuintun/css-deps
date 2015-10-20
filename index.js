@@ -4,7 +4,7 @@
 
 'use strict';
 
-var util = require('./lib/uitl');
+var util = require('./lib/util');
 var postcss = require('postcss');
 
 module.exports = function (src, replace, options){
@@ -20,11 +20,12 @@ module.exports = function (src, replace, options){
   }
 
   try {
-    var ast = options.parse(src);
+    var ast = postcss.parse(src);
   } catch (error) {
     return replace ? src : [];
   }
 
+  options.minify = true;
   var deps = [];
   var onpath = options.onpath;
   var prefix = options.prefix;
@@ -42,6 +43,28 @@ module.exports = function (src, replace, options){
   }
 
   ast.walk(function (node){
+    // minify
+    if (options.minify === true) {
+      for (var prop in node.raws) {
+        if (node.raws.hasOwnProperty(prop) && util.string(node.raws[prop])) {
+          node.raws[prop] = node.raws[prop].replace(/[\r\n\t]/g, '').replace(/\s+/g, '');
+        }
+      }
+
+      if (node.selector) {
+        node.selector = node.selector.replace(/\s*,\s*/g, ',').replace(/\s+/g, ' ');
+      }
+    }
+
+    // comments
+    if (node.type === 'comment') {
+      if (options.minify === true) {
+        node.remove();
+      }
+
+      return;
+    }
+
     // at rule
     if (node.type === 'atrule') {
       // remove chartset
@@ -51,30 +74,32 @@ module.exports = function (src, replace, options){
         return;
       }
 
-      // import
-      var IMPORTRE = /url\(["']?([^"')]+)["']?\)|['"]([^"')]+)['"]/gi;
+      if (node.name === 'import') {
+        // import
+        var IMPORTRE = /url\(["']?([^"')]+)["']?\)|['"]([^"')]+)['"]/gi;
 
-      if (node.name === 'import' && IMPORTRE.test(node.params)) {
-        node.params = node.params.replace(IMPORTRE, function (){
-          var source = arguments[0];
-          var url = arguments[1] || arguments[2];
+        if (IMPORTRE.test(node.params)) {
+          node.params = node.params.replace(IMPORTRE, function (){
+            var source = arguments[0];
+            var url = arguments[1] || arguments[2];
 
-          // collect dependencies
-          deps.push(url);
+            // collect dependencies
+            deps.push(url);
 
-          // replace import
-          if (replace) {
-            var path = replace(url, node.name);
+            // replace import
+            if (replace) {
+              var path = replace(url, node.name);
 
-            if (util.string(path) && path.trim()) {
-              return source.replace(url, path);
-            } else if (path === false) {
-              node.remove();
+              if (util.string(path) && path.trim()) {
+                return source.replace(url, path);
+              } else if (path === false) {
+                node.remove();
+              }
             }
-          }
 
-          return source;
-        });
+            return source;
+          });
+        }
 
         return;
       }

@@ -4,17 +4,39 @@
 
 var fs = require('fs');
 var postcss = require('postcss');
+var parse = require('../');
 var css = fs.readFileSync('./index.css').toString();
 
-var ast = postcss.parse(css, { from: './index.css' });
+//var ast = postcss.parse(css, { from: './index.css' });
+//
+//ast.walk(function (node){
+//  console.log(JSON.stringify(node, null, 2));
+//  console.log('------------------------------------------');
+//
+//  if (node.type === 'atrule' && node.name === 'charset') {
+//    node.remove()
+//  }
+//});
+//
+//console.log(ast.toResult().css);
 
-ast.walk(function (node){
-  console.log(JSON.stringify(node, null, 2));
-  console.log('------------------------------------------');
+console.time('parse');
+var result = parse(css, function (url, name){
+  console.log(url);
+  console.log(name);
+  console.log();
 
-  if (node.type === 'atrule' && node.name === 'charset') {
-    node.remove()
+  return 'b.css';
+}, {
+  prefix: '.ui-dialog',
+  onpath: function (url, name){
+    console.log(url);
+    console.log(name);
+    console.log();
+
+    return 'a.png';
   }
 });
 
-console.log(ast.toResult().css);
+console.log(result);
+console.timeEnd('parse');
