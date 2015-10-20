@@ -7,7 +7,7 @@ Transform css and get css dependences
 * parseDependencies(code:String, replace:Function, options:Object):String
 * parseDependencies(code:String, options:Object):Array
   * options { compress:Boolean, prifix:String, onpath:Function }
-  * compress: minify css file
+  * compress: compress css file
   * prifix: add prifix before selector
   * onpath: replace css resource file url
 
