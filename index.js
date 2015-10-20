@@ -7,6 +7,10 @@
 var util = require('./lib/util');
 var postcss = require('postcss');
 
+function inline(str){
+  return str.trim().replace(/[\r\n\t]/g, '');
+}
+
 module.exports = function (src, replace, options){
   options = options || {};
 
@@ -25,7 +29,6 @@ module.exports = function (src, replace, options){
     return replace ? src : [];
   }
 
-  options.minify = true;
   var deps = [];
   var onpath = options.onpath;
   var prefix = options.prefix;
@@ -43,19 +46,6 @@ module.exports = function (src, replace, options){
   }
 
   ast.walk(function (node){
-    // minify
-    if (options.minify === true) {
-      for (var prop in node.raws) {
-        if (node.raws.hasOwnProperty(prop) && util.string(node.raws[prop])) {
-          node.raws[prop] = node.raws[prop].replace(/[\r\n\t]/g, '').replace(/\s+/g, '');
-        }
-      }
-
-      if (node.selector) {
-        node.selector = node.selector.replace(/\s*,\s*/g, ',').replace(/\s+/g, ' ');
-      }
-    }
-
     // comments
     if (node.type === 'comment') {
       if (options.minify === true) {
@@ -63,6 +53,26 @@ module.exports = function (src, replace, options){
       }
 
       return;
+    }
+
+    // minify
+    if (options.minify === true) {
+      // props
+      for (var prop in node.raws) {
+        if (node.raws.hasOwnProperty(prop)) {
+          if (util.string(node.raws[prop])) {
+            node.raws[prop] = inline(node.raws[prop]);
+            node.raws[prop] = node.raws[prop].replace(/\s+/g, prop === 'afterName' ? ' ' : '')
+          } else if (util.object(node.raws[prop]) && node.raws[prop].raw) {
+            node.raws[prop].raw = inline(node.raws[prop].raw).replace(/\s+/g, ' ');
+          }
+        }
+      }
+
+      // selector
+      if (node.selector) {
+        node.selector = inline(node.selector).replace(/\s*,\s*/g, ',').replace(/\s+/g, ' ');
+      }
     }
 
     // at rule
