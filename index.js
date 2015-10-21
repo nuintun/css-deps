@@ -62,16 +62,18 @@ module.exports = function (src, replace, options){
         if (node.raws.hasOwnProperty(prop)) {
           if (util.string(node.raws[prop])) {
             node.raws[prop] = inline(node.raws[prop]);
-            node.raws[prop] = node.raws[prop].replace(/\s+/g, prop === 'afterName' ? ' ' : '')
+            node.raws[prop] = postcss.list.space(node.raws[prop]).join('');
           } else if (util.object(node.raws[prop]) && node.raws[prop].raw) {
-            node.raws[prop].raw = inline(node.raws[prop].raw).replace(/\s+/g, ' ');
+            node.raws[prop].raw = postcss.list.comma(node.raws[prop].raw).map(function (value){
+              return postcss.list.space(value).join(' ');
+            }).join(',');
           }
         }
       }
 
       // selector
       if (node.selector) {
-        node.selector = inline(node.selector).replace(/\s*,\s*/g, ',').replace(/\s+/g, ' ');
+        node.selector = postcss.list.comma(node.selector).join(',');
       }
     }
 
