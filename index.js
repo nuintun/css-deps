@@ -57,33 +57,47 @@ module.exports = function (src, replace, options){
 
     // compress
     if (options.compress === true) {
-      // props
-      for (var prop in node.raws) {
-        if (node.raws.hasOwnProperty(prop)) {
-          if (util.string(node.raws[prop])) {
-            node.raws[prop] = inline(node.raws[prop]);
-            node.raws[prop] = postcss.list.space(node.raws[prop]).join('');
-          } else if (util.object(node.raws[prop]) && node.raws[prop].raw) {
-            node.raws[prop].raw = postcss.list.comma(node.raws[prop].raw).map(function (value){
-              return postcss.list.space(value).join(' ');
-            }).join(',');
-          }
+      // compress declaration
+      if (node.type === 'decl') {
+        // ensure that !important values do not have any excess space
+        if (node.important) {
+          node.raws.important = '!important';
         }
-      }
 
-      // selector
-      if (node.selector) {
-        node.selector = postcss.list.comma(node.selector).map(function (value){
-          return postcss.list.space(value).join(' ');
-        }).join(',');
-      }
-      
-      // decl value
-      if (!node.raws.value && node.value) {
+        // remove extra space in the declaration value
         node.value = postcss.list.comma(node.value).map(function (value){
           return postcss.list.space(value).join(' ');
         }).join(',');
+
+        // remove extra semicolons and space before the declaration
+        if (node.raws.before) {
+          node.raws.before = node.raws.before.replace(/[;\s]/g, '');
+        }
+
+        // remove extra space before the declaration and value
+        node.raws.between = ':';
       }
+
+      // compress rule and atrule
+      if (node.type === 'rule' || node.type === 'atrule') {
+        // remove extra before and between the rule and atrule
+        node.raws.before = node.raws.between = '';
+
+        if (node.type === 'rule') {
+          // remove extra space in selectors
+          node.selector = node.selectors.map(function (value){
+            return value.replace(/\s{2,}/g, ' ');
+          }).join(',');
+        } else {
+          // remove extra space between the at-rule’s name and it's parameters
+          node.raws.afterName = ' ';
+        }
+      }
+
+      // remove final newline
+      node.raws.after = '';
+      // remove last semicolon
+      node.raws.semicolon = false;
     }
 
     // at rule
