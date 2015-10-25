@@ -73,7 +73,16 @@ module.exports = function (src, replace, options){
 
       // selector
       if (node.selector) {
-        node.selector = postcss.list.comma(node.selector).join(',');
+        node.selector = postcss.list.comma(node.selector).map(function (value){
+          return postcss.list.space(value).join(' ');
+        }).join(',');
+      }
+      
+      // decl value
+      if (!node.raws.value && node.value) {
+        node.value = postcss.list.comma(node.value).map(function (value){
+          return postcss.list.space(value).join(' ');
+        }).join(',');
       }
     }
 
