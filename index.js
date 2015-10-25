@@ -7,10 +7,13 @@
 var util = require('./lib/util');
 var postcss = require('postcss');
 
-function inline(str){
-  return str.trim().replace(/[\r\n\t]/g, '');
-}
-
+/**
+ * css-deps
+ * @param src
+ * @param replace
+ * @param options
+ * @returns {String|Array}
+ */
 module.exports = function (src, replace, options){
   options = options || {};
 
@@ -69,7 +72,7 @@ module.exports = function (src, replace, options){
           return postcss.list.space(value).join(' ');
         }).join(',');
 
-        // remove extra semicolons and space before the declaration
+        // remove extra space semicolons and space before the declaration
         if (node.raws.before) {
           node.raws.before = node.raws.before.replace(/[;\s]/g, '');
         }
