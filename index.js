@@ -79,13 +79,13 @@ module.exports = function (src, replace, options){
     if (options.compress === true) {
       // compress declaration
       if (node.type === 'decl') {
+        // remove extra space in the declaration value
+        cssnano.declaration(node);
+
         // ensure that !important values do not have any excess space
         if (node.important) {
           node.raws.important = '!important';
         }
-
-        // remove extra space in the declaration value
-        cssnano.declaration(node);
 
         // remove extra space semicolons and space before the declaration
         if (node.raws.before) {
@@ -98,9 +98,6 @@ module.exports = function (src, replace, options){
 
       // compress rule and atrule
       if (node.type === 'rule' || node.type === 'atrule') {
-        // remove extra before and between the rule and atrule
-        node.raws.before = node.raws.between = '';
-
         // rule
         if (node.type === 'rule') {
           // remove empty rule
@@ -118,6 +115,9 @@ module.exports = function (src, replace, options){
           // remove extra space between the at-rule’s name and it's parameters
           node.raws.afterName = ' ';
         }
+
+        // remove extra before and between the rule and atrule
+        node.raws.before = node.raws.between = '';
       }
 
       // remove final newline
