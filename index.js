@@ -116,7 +116,7 @@ module.exports = function (src, replace, options){
             value = value.replace(/\s{2,}/g, ' ');
             value = value.replace(/\s+\]/g, ']');
             value = value.replace(/\[\s+/g, '[');
-            value = value.replace(/\s?([:,~>+=]|\*=|~=|\^=|\$=|\|=|::)\s?/g, '$1');
+            value = value.replace(/\s?([:,~>+=()]|\*=|~=|\^=|\$=|\|=|::)\s?/g, '$1');
 
             return value;
           })).join(',');
