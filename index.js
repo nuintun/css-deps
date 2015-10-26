@@ -33,6 +33,7 @@ function isEmptyRule(rule){
 module.exports = function (src, replace, options){
   options = options || {};
 
+  // is buffer
   if (Buffer.isBuffer(src)) src = src.toString();
 
   if (util.object(replace) && !Array.isArray(replace)) {
