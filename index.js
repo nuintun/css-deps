@@ -8,6 +8,21 @@ var util = require('./lib/util');
 var postcss = require('postcss');
 
 /**
+ * is a empty rule
+ * @param rule
+ * @returns {boolean}
+ */
+function isEmptyRule(rule){
+  for (var i = 0, length = rule.nodes.length; i < length; i++) {
+    if (rule.nodes[i].type !== 'comment') {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * css-deps
  * @param src
  * @param replace
@@ -52,6 +67,7 @@ module.exports = function (src, replace, options){
     // comments
     if (node.type === 'comment') {
       if (options.compress === true) {
+        // remove comments
         node.remove();
       }
 
@@ -86,11 +102,24 @@ module.exports = function (src, replace, options){
         // remove extra before and between the rule and atrule
         node.raws.before = node.raws.between = '';
 
+        // rule
         if (node.type === 'rule') {
+          // remove empty rule
+          if (isEmptyRule(node)) {
+            node.remove();
+
+            return;
+          }
+
           // remove extra space in selectors
-          node.selector = node.selectors.map(function (value){
-            return value.replace(/\s{2,}/g, ' ');
-          }).join(',');
+          node.selector = util.unique(node.selectors.map(function (value){
+            value = value.replace(/\s{2,}/g, ' ');
+            value = value.replace(/\s+\]/g, ']');
+            value = value.replace(/\[\s+/g, '[');
+            value = value.replace(/\s?([:,~>+=]|\*=|~=|\^=|\$=|\|=|::)\s?/g, '$1');
+
+            return value;
+          })).join(',');
         } else {
           // remove extra space between the at-rule’s name and it's parameters
           node.raws.afterName = ' ';
