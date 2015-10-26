@@ -6,6 +6,7 @@
 
 var util = require('./lib/util');
 var postcss = require('postcss');
+var cssnano = require('./lib/cssnano');
 
 /**
  * is a empty rule
@@ -84,9 +85,7 @@ module.exports = function (src, replace, options){
         }
 
         // remove extra space in the declaration value
-        node.value = postcss.list.comma(node.value).map(function (value){
-          return postcss.list.space(value).join(' ');
-        }).join(',');
+        cssnano.declaration(node);
 
         // remove extra space semicolons and space before the declaration
         if (node.raws.before) {
@@ -112,15 +111,10 @@ module.exports = function (src, replace, options){
           }
 
           // remove extra space in selectors
-          node.selector = util.unique(node.selectors.map(function (value){
-            value = value.replace(/\s{2,}/g, ' ');
-            value = value.replace(/\s+\]/g, ']');
-            value = value.replace(/\[\s+/g, '[');
-            value = value.replace(/\s?([:,~>+=()]|\*=|~=|\^=|\$=|\|=|::)\s?/g, '$1');
-
-            return value;
-          })).join(',');
+          cssnano.selector(node);
         } else {
+          // remove extra space in params
+          cssnano.params(node);
           // remove extra space between the at-rule’s name and it's parameters
           node.raws.afterName = ' ';
         }
