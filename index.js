@@ -66,67 +66,6 @@ module.exports = function (src, replace, options){
   }
 
   ast.walk(function (node){
-    // comments
-    if (node.type === 'comment') {
-      if (options.compress === true) {
-        // remove comments
-        node.remove();
-      }
-
-      return;
-    }
-
-    // compress
-    if (options.compress === true) {
-      // compress declaration
-      if (node.type === 'decl') {
-        // remove extra space in the declaration value
-        cssnano.declaration(node);
-
-        // ensure that !important values do not have any excess space
-        if (node.important) {
-          node.raws.important = '!important';
-        }
-
-        // remove extra space semicolons and space before the declaration
-        if (node.raws.before) {
-          node.raws.before = node.raws.before.replace(/[;\s]/g, '');
-        }
-
-        // remove extra space before the declaration and value
-        node.raws.between = ':';
-      }
-
-      // compress rule and atrule
-      if (node.type === 'rule' || node.type === 'atrule') {
-        // rule
-        if (node.type === 'rule') {
-          // remove empty rule
-          if (isEmptyRule(node)) {
-            node.remove();
-
-            return;
-          }
-
-          // remove extra space in selectors
-          cssnano.selector(node);
-        } else {
-          // remove extra space in params
-          cssnano.params(node);
-          // remove extra space between the at-rule’s name and it's parameters
-          node.raws.afterName = ' ';
-        }
-
-        // remove extra before and between the rule and atrule
-        node.raws.before = node.raws.between = '';
-      }
-
-      // remove final newline
-      node.raws.after = '';
-      // remove last semicolon
-      node.raws.semicolon = false;
-    }
-
     // at rule
     if (node.type === 'atrule') {
       // remove chartset
