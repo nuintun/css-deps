@@ -6,7 +6,6 @@
 
 var util = require('./lib/util');
 var postcss = require('postcss');
-var cssnano = require('./lib/cssnano');
 
 /**
  * is a empty rule
