@@ -8,21 +8,6 @@ var util = require('./lib/util');
 var postcss = require('postcss');
 
 /**
- * is a empty rule
- * @param rule
- * @returns {boolean}
- */
-function isEmptyRule(rule){
-  for (var i = 0, length = rule.nodes.length; i < length; i++) {
-    if (rule.nodes[i].type !== 'comment') {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
  * css-deps
  * @param src
  * @param replace
