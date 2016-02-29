@@ -22,7 +22,7 @@
     "dependencies"
   ],
   "dependencies": {
-    "postcss": "^5.0.16"
+    "postcss": "^5.0.17"
   },
   "devDependencies": {
   },
