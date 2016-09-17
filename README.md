@@ -29,7 +29,7 @@ html, body {
 js:
 ```js
 var parseDependencies = require('css-deps');
-var deps = parseDependencies(source, true);
+var deps = parseDependencies(source);
 
 // print dependencies
 console.log(deps);
