@@ -14,7 +14,7 @@ var postcss = require('postcss');
  * @param options
  * @returns {String|Array}
  */
-module.exports = function (src, replace, options){
+module.exports = function(src, replace, options) {
   options = options || {};
 
   // is buffer
@@ -49,7 +49,7 @@ module.exports = function (src, replace, options){
     onpath = prefix = undefined;
   }
 
-  ast.walk(function (node){
+  ast.walk(function(node) {
     // at rule
     if (node.type === 'atrule') {
       // remove chartset
@@ -64,7 +64,7 @@ module.exports = function (src, replace, options){
         var IMPORTRE = /url\(["']?([^"')]+)["']?\)|['"]([^"')]+)['"]/gi;
 
         if (IMPORTRE.test(node.params)) {
-          node.params = node.params.replace(IMPORTRE, function (){
+          node.params = node.params.replace(IMPORTRE, function() {
             var source = arguments[0];
             var url = arguments[1] || arguments[2];
 
@@ -97,9 +97,9 @@ module.exports = function (src, replace, options){
         /AlphaImageLoader\(\s*src\s*=\s*['"]?([^"')]+)["']?\s*[,)]/gi
       ];
 
-      URLRES.some(function (pattern){
+      URLRES.some(function(pattern) {
         if (pattern.test(node.value)) {
-          node.value = node.value.replace(pattern, function (){
+          node.value = node.value.replace(pattern, function() {
             var source = arguments[0];
             var url = arguments[1];
             var path = onpath(url, node.prop);
