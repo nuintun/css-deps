@@ -22,7 +22,7 @@
     "dependencies"
   ],
   "dependencies": {
-    "postcss": "^6.0.8"
+    "postcss": "^6.0.9"
   },
   "readmeFilename": "README.md"
 }
