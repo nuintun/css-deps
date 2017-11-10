@@ -6,7 +6,7 @@
 
 'use strict';
 
-const util = require('./lib/util');
+const utils = require('./lib/utils');
 const postcss = require('postcss');
 
 /**
@@ -22,12 +22,12 @@ module.exports = function(src, replace, options) {
   // is buffer
   if (Buffer.isBuffer(src)) src = src.toString();
 
-  if (util.object(replace) && !Array.isArray(replace)) {
+  if (utils.object(replace) && !Array.isArray(replace)) {
     options = replace;
     replace = undefined;
   }
 
-  if (replace && !util.fn(replace)) replace = util.noop;
+  if (replace && !utils.fn(replace)) replace = utils.noop;
 
   let ast;
 
@@ -42,12 +42,12 @@ module.exports = function(src, replace, options) {
   let prefix = options.prefix;
 
   if (replace) {
-    onpath = util.fn(onpath) ? onpath : undefined;
+    onpath = utils.fn(onpath) ? onpath : undefined;
 
-    if (util.string(onpath)) {
+    if (utils.string(onpath)) {
       prefix = onpath;
     } else {
-      prefix = util.string(prefix) ? prefix : undefined;
+      prefix = utils.string(prefix) ? prefix : undefined;
     }
   } else {
     onpath = prefix = undefined;
@@ -79,7 +79,7 @@ module.exports = function(src, replace, options) {
             if (replace) {
               const path = replace(url, node.name);
 
-              if (util.string(path) && path.trim()) {
+              if (utils.string(path) && path.trim()) {
                 return source.replace(url, path);
               } else if (path === false) {
                 node.remove();
@@ -109,7 +109,7 @@ module.exports = function(src, replace, options) {
             const path = onpath(url, node.prop);
 
             // replace resource path
-            if (util.string(path) && path.trim()) {
+            if (utils.string(path) && path.trim()) {
               return source.replace(url, path);
             } else {
               return source;
