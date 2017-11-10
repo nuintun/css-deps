@@ -6,6 +6,9 @@
     "name": "nuintun",
     "email": "nuintun@qq.com"
   },
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "homepage": "https://nuintun.github.io/css-deps",
   "repository": {
     "type": "git",
@@ -22,7 +25,7 @@
     "dependencies"
   ],
   "dependencies": {
-    "postcss": "^6.0.13"
+    "postcss": "^6.0.14"
   },
   "readmeFilename": "README.md"
 }

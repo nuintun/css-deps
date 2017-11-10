@@ -1,14 +1,20 @@
+/**
+ * @module index
+ * @license MIT
+ * @version 2017/11/10
+ */
+
 'use strict';
 
-var util = require('./lib/util');
-var postcss = require('postcss');
+const util = require('./lib/util');
+const postcss = require('postcss');
 
 /**
- * css-deps
- * @param src
- * @param replace
- * @param options
- * @returns {String|Array}
+ * @function css
+ * @param {string} src
+ * @param {Function} replace
+ * @param {object} options
+ * @returns {string|Array}
  */
 module.exports = function(src, replace, options) {
   options = options || {};
@@ -23,15 +29,17 @@ module.exports = function(src, replace, options) {
 
   if (replace && !util.fn(replace)) replace = util.noop;
 
+  let ast;
+
   try {
-    var ast = postcss.parse(src);
+    ast = postcss.parse(src);
   } catch (error) {
     return replace ? src : [];
   }
 
-  var deps = [];
-  var onpath = options.onpath;
-  var prefix = options.prefix;
+  const deps = [];
+  let onpath = options.onpath;
+  let prefix = options.prefix;
 
   if (replace) {
     onpath = util.fn(onpath) ? onpath : undefined;
@@ -57,19 +65,19 @@ module.exports = function(src, replace, options) {
 
       if (node.name === 'import') {
         // import
-        var IMPORTRE = /url\(["']?([^"')]+)["']?\)|['"]([^"')]+)['"]/gi;
+        const IMPORTRE = /url\(["']?([^"')]+)["']?\)|['"]([^"')]+)['"]/gi;
 
         if (IMPORTRE.test(node.params)) {
           node.params = node.params.replace(IMPORTRE, function() {
-            var source = arguments[0];
-            var url = arguments[1] || arguments[2];
+            const source = arguments[0];
+            const url = arguments[1] || arguments[2];
 
             // collect dependencies
             deps.push(url);
 
             // replace import
             if (replace) {
-              var path = replace(url, node.name);
+              const path = replace(url, node.name);
 
               if (util.string(path) && path.trim()) {
                 return source.replace(url, path);
@@ -88,7 +96,7 @@ module.exports = function(src, replace, options) {
 
     // declaration
     if (onpath && node.type === 'decl') {
-      var URLRES = [
+      const URLRES = [
         /url\(\s*['"]?([^"')]+)["']?\s*\)/gi,
         /AlphaImageLoader\(\s*src\s*=\s*['"]?([^"')]+)["']?\s*[,)]/gi
       ];
@@ -96,9 +104,9 @@ module.exports = function(src, replace, options) {
       URLRES.some(function(pattern) {
         if (pattern.test(node.value)) {
           node.value = node.value.replace(pattern, function() {
-            var source = arguments[0];
-            var url = arguments[1];
-            var path = onpath(url, node.prop);
+            const source = arguments[0];
+            const url = arguments[1];
+            const path = onpath(url, node.prop);
 
             // replace resource path
             if (util.string(path) && path.trim()) {
@@ -119,7 +127,7 @@ module.exports = function(src, replace, options) {
 
     // selector
     if (prefix && node.type === 'rule') {
-      var PREFIXRE = /(,?\s*(?::root\s)?\s*)([^,]+)/gi;
+      const PREFIXRE = /(,?\s*(?::root\s)?\s*)([^,]+)/gi;
 
       node.selector = node.selector.replace(PREFIXRE, '$1' + prefix + ' $2');
     }
