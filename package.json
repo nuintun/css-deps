@@ -20,10 +20,7 @@
   },
   "license": "MIT",
   "main": "index",
-  "keywords": [
-    "css",
-    "dependencies"
-  ],
+  "keywords": ["css", "dependencies"],
   "dependencies": {
     "postcss": "^6.0.14"
   },
