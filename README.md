@@ -1,10 +1,11 @@
 # css-deps
 
->Transform css and get css dependences
+> Transform css and get css dependences
 >
->[![Dependencies][david-image]][david-url]
+> [![Dependencies][david-image]][david-url]
 
 ### Api
+
 * parseDependencies(code:String, replace:Function, options:Object):String
 * parseDependencies(code:String, options:Object):Array
   * options { compress:Boolean, prifix:String, onpath:Function }
@@ -12,12 +13,15 @@
   * onpath: replace css resource file url
 
 ### Example
-css:
-```css
-@import "reset.css";
-@import "base.css";
 
-html, body {
+css:
+
+```css
+@import 'reset.css';
+@import 'base.css';
+
+html,
+body {
   height: 100%;
   width: 100%;
   font-size: 13px;
@@ -26,6 +30,7 @@ html, body {
 ```
 
 js:
+
 ```js
 var parseDependencies = require('css-deps');
 var deps = parseDependencies(source);
@@ -35,8 +40,9 @@ console.log(deps);
 ```
 
 parser output:
+
 ```js
-['reset.css', 'base.css']
+['reset.css', 'base.css'];
 ```
 
 ## License
