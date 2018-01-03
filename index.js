@@ -32,7 +32,7 @@ module.exports = function(src, replace, options) {
   let ast;
 
   try {
-    ast = postcss.parse(src);
+    ast = postcss.parse(src, { from: options.from });
   } catch (error) {
     return replace ? src : [];
   }
