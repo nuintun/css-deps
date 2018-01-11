@@ -19,7 +19,7 @@ const postcss = require('postcss');
 module.exports = function(src, replace, options) {
   options = options || {};
 
-  // is buffer
+  // Is buffer
   if (Buffer.isBuffer(src)) src = src.toString();
 
   if (utils.object(replace) && !Array.isArray(replace)) {
@@ -54,9 +54,9 @@ module.exports = function(src, replace, options) {
   }
 
   ast.walk(function(node) {
-    // at rule
+    // At rule
     if (node.type === 'atrule') {
-      // remove chartset
+      // Remove chartset
       if (node.name === 'charset') {
         node.remove();
 
@@ -64,7 +64,7 @@ module.exports = function(src, replace, options) {
       }
 
       if (node.name === 'import') {
-        // import
+        // Import
         const IMPORTRE = /url\(["']?([^"')]+)["']?\)|['"]([^"')]+)['"]/gi;
 
         if (IMPORTRE.test(node.params)) {
@@ -72,10 +72,10 @@ module.exports = function(src, replace, options) {
             const source = arguments[0];
             const url = arguments[1] || arguments[2];
 
-            // collect dependencies
+            // Collect dependencies
             deps.push(url);
 
-            // replace import
+            // Replace import
             if (replace) {
               const path = replace(url, node.name);
 
@@ -94,7 +94,7 @@ module.exports = function(src, replace, options) {
       }
     }
 
-    // declaration
+    // Declaration
     if (onpath && node.type === 'decl') {
       const URLRES = [
         /url\(\s*['"]?([^"')]+)["']?\s*\)/gi,
@@ -108,7 +108,7 @@ module.exports = function(src, replace, options) {
             const url = arguments[1];
             const path = onpath(url, node.prop);
 
-            // replace resource path
+            // Replace resource path
             if (utils.string(path) && path.trim()) {
               return source.replace(url, path);
             } else {
@@ -125,7 +125,7 @@ module.exports = function(src, replace, options) {
       return;
     }
 
-    // selector
+    // Selector
     if (prefix && node.type === 'rule') {
       const PREFIXRE = /(,?\s*(?::root\s)?\s*)([^,]+)/gi;
 
@@ -133,7 +133,7 @@ module.exports = function(src, replace, options) {
     }
   });
 
-  // if replace is true, return code else all import
+  // If replace is true, return code else all import
   if (replace) {
     return ast.toResult().css;
   } else {

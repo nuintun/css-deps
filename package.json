@@ -22,7 +22,7 @@
   "main": "index",
   "keywords": ["css", "dependencies"],
   "dependencies": {
-    "postcss": "^6.0.15"
+    "postcss": "^6.0.16"
   },
   "readmeFilename": "README.md"
 }
