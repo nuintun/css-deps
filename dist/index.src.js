@@ -67,12 +67,6 @@ function parser(code, replace, options) {
   let syntax;
   const dependencies = [];
 
-  try {
-    syntax = postcss.parse(code);
-  } catch (error) {
-    return { code, dependencies };
-  }
-
   if (replace) {
     if (object(replace)) {
       options = replace;
@@ -83,6 +77,12 @@ function parser(code, replace, options) {
   }
 
   options = options || {};
+
+  try {
+    syntax = postcss.parse(code, options.postcss);
+  } catch (error) {
+    return { code, dependencies };
+  }
 
   const onpath = fn(options.onpath) ? options.onpath : null;
 
