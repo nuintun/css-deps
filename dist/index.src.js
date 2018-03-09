@@ -1,11 +1,57 @@
 /**
- * @module index
+ * @module @nuintun/css-deps
+ * @author nuintun
+ * @license MIT
+ * @version 2.0.0
+ * @description Transform css and get css dependences
+ * @see https://nuintun.github.io/css-deps
+ */
+
+'use strict';
+
+var postcss = require('postcss');
+
+/**
+ * @module utils
  * @license MIT
  * @version 2017/11/10
  */
 
-import * as postcss from 'postcss';
-import * as utils from './lib/utils';
+// Variable declaration
+const toString = Object.prototype.toString;
+
+/**
+ * @function string
+ * @param {any} string
+ * @returns {boolean}
+ */
+function string(string) {
+  return toString.call(string) === '[object String]';
+}
+
+/**
+ * @function fn
+ * @param {any} fn
+ * @returns {boolean}
+ */
+function fn(fn) {
+  return toString.call(fn) === '[object Function]';
+}
+
+/**
+ * @function object
+ * @param {any} object
+ * @returns {boolean}
+ */
+function object(object) {
+  return toString.call(object) === '[object Object]';
+}
+
+/**
+ * @module index
+ * @license MIT
+ * @version 2017/11/10
+ */
 
 /**
  * @function parser
@@ -14,7 +60,7 @@ import * as utils from './lib/utils';
  * @param {object} options
  * @returns {Object}
  */
-export default function parser(code, replace, options) {
+function parser(code, replace, options) {
   // Is buffer
   if (Buffer.isBuffer(code)) code = code.toString();
 
@@ -28,17 +74,17 @@ export default function parser(code, replace, options) {
   }
 
   if (replace) {
-    if (utils.object(replace)) {
+    if (object(replace)) {
       options = replace;
       replace = null;
-    } else if (!utils.fn(replace)) {
+    } else if (!fn(replace)) {
       replace = null;
     }
   }
 
   options = options || {};
 
-  const onpath = utils.fn(options.onpath) ? options.onpath : null;
+  const onpath = fn(options.onpath) ? options.onpath : null;
 
   syntax.walk(node => {
     switch (node.type) {
@@ -57,7 +103,7 @@ export default function parser(code, replace, options) {
               if (replace) {
                 const returned = replace(url, node.name);
 
-                if (utils.string(returned) && returned.trim()) {
+                if (string(returned) && returned.trim()) {
                   return source.replace(url, returned);
                 } else if (returned === false) {
                   node.remove();
@@ -85,7 +131,7 @@ export default function parser(code, replace, options) {
                 const returned = onpath(url, node.prop);
 
                 // Replace resource path
-                if (utils.string(returned) && returned.trim()) {
+                if (string(returned) && returned.trim()) {
                   return source.replace(url, returned);
                 } else {
                   return source;
@@ -108,3 +154,5 @@ export default function parser(code, replace, options) {
   // Returned
   return { code, dependencies };
 }
+
+module.exports = parser;
