@@ -6,6 +6,8 @@
 
 import * as postcss from 'postcss';
 import * as utils from './lib/utils';
+import parseImport from './lib/parse-import';
+import postcssValuesParser from 'postcss-values-parser';
 
 /**
  * @function parser
@@ -45,32 +47,19 @@ export default function parser(code, replace, options) {
       // At rule
       case 'atrule':
         if (node.name === 'import') {
-          // Import
-          const IMPORT_RE = /(?:url\()?(["']?)([^"')]+)\1(?:\))?/i;
+          const parsed = parseImport(node, replace);
+          const code = parsed.code;
+          const path = parsed.path;
+          const media = parsed.media;
 
-          if (IMPORT_RE.test(node.params)) {
-            node.params = node.params.replace(IMPORT_RE, (source, quote, url) => {
-              // Collect dependencies
-              dependencies.push(url);
-
-              // Replace import
-              if (replace) {
-                const returned = replace(url, node.name);
-
-                if (utils.string(returned) && returned.trim()) {
-                  return source.replace(url, returned);
-                } else if (returned === false) {
-                  node.remove();
-                }
-              }
-
-              return source;
-            });
-          }
+          dependencies.push({ path, media });
+          code ? (node.params = code) : node.remove();
         }
         break;
       // Declaration
       case 'decl':
+        console.log(postcssValuesParser(node.value).parse());
+
         if (onpath) {
           // https://github.com/postcss/postcss-url/blob/master/src/lib/decl-processor.js#L21
           const URL_PATTERNS = [

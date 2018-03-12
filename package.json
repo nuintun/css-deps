@@ -22,7 +22,8 @@
   "main": "index",
   "keywords": ["css", "dependencies"],
   "dependencies": {
-    "postcss": "^6.0.19"
+    "postcss": "^6.0.19",
+    "postcss-values-parser": "^1.4.0"
   },
   "devDependencies": {
     "rollup": "^0.56.5",

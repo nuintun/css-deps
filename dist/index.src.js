@@ -9,6 +9,7 @@
 
 'use strict';
 
+var postcssValuesParser = require('postcss-values-parser');
 var postcss = require('postcss');
 
 /**
@@ -45,6 +46,108 @@ function fn(fn) {
  */
 function object(object) {
   return toString.call(object) === '[object Object]';
+}
+
+/**
+ * @module parse-import
+ * @license MIT
+ * @version 2018/03/12
+ */
+
+/**
+ * @function parseMedia
+ * @param {Object} root
+ * @returns {Array}
+ */
+function parseMedia(root) {
+  const media = [];
+
+  if (!root.nodes.length) return media;
+
+  const start = 1;
+  const values = root.nodes[0].nodes;
+
+  if (values.length > start) {
+    const rest = values.reduce((item, node, index) => {
+      if (index < start) return '';
+
+      if (node.type === 'comma') {
+        media.push(item.trim());
+
+        return '';
+      }
+
+      return item + node;
+    }, '');
+
+    media.push(rest.trim());
+  }
+
+  return media;
+}
+
+/**
+ * @function execReplace
+ * @param {Function} replace
+ * @param {Object} root
+ * @param {Object} node
+ */
+function execReplace(replace, root, node) {
+  if (replace) {
+    const returned = replace(node.value);
+
+    if (string(returned) && returned.trim()) {
+      node.value = returned;
+    } else if (returned === false) {
+      root.removeAll();
+    }
+  }
+}
+
+/**
+ * @function parseUrl
+ * @param {Object} root
+ * @param {Function} replace
+ * @returns {string}
+ */
+function parseUrl(root, replace) {
+  let url = '';
+
+  if (!root.nodes.length) return url;
+
+  const values = root.nodes[0].nodes;
+
+  if (!values.length) return url;
+
+  let node = values[0];
+
+  if (node.type === 'string') {
+    url = node.value;
+
+    execReplace(replace, root, node);
+  } else if (node.type === 'func' && node.value === 'url') {
+    node = node.nodes[1];
+    url = node.value;
+
+    execReplace(replace, root, node);
+  }
+
+  return url;
+}
+
+/**
+ * @function parseImport
+ * @param {Object} node
+ * @param {Function} replace
+ * @returns {Array}
+ */
+function parseImport(node, replace) {
+  const root = postcssValuesParser(node.params).parse();
+  const path = parseUrl(root, replace);
+  const media = parseMedia(root);
+  const code = root.toString();
+
+  return { path, media, code };
 }
 
 /**
@@ -91,32 +194,19 @@ function parser(code, replace, options) {
       // At rule
       case 'atrule':
         if (node.name === 'import') {
-          // Import
-          const IMPORT_RE = /(?:url\()?(["']?)([^"')]+)\1(?:\))?/i;
+          const parsed = parseImport(node, replace);
+          const code = parsed.code;
+          const path = parsed.path;
+          const media = parsed.media;
 
-          if (IMPORT_RE.test(node.params)) {
-            node.params = node.params.replace(IMPORT_RE, (source, quote, url) => {
-              // Collect dependencies
-              dependencies.push(url);
-
-              // Replace import
-              if (replace) {
-                const returned = replace(url, node.name);
-
-                if (string(returned) && returned.trim()) {
-                  return source.replace(url, returned);
-                } else if (returned === false) {
-                  node.remove();
-                }
-              }
-
-              return source;
-            });
-          }
+          dependencies.push({ path, media });
+          code ? (node.params = code) : node.remove();
         }
         break;
       // Declaration
       case 'decl':
+        console.log(postcssValuesParser(node.value).parse());
+
         if (onpath) {
           // https://github.com/postcss/postcss-url/blob/master/src/lib/decl-processor.js#L21
           const URL_PATTERNS = [
