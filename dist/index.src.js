@@ -168,9 +168,9 @@ function parseUrl(root, replace) {
  * @param {Function} replace
  * @returns {Array}
  */
-function parseImport(node, replace) {
+function parseImport(node, replace, options) {
   const root = postcssValuesParser(node.params).parse();
-  const media = parseMedia(root);
+  const media = options.media ? parseMedia(root) : [];
   const path = parseUrl(root, replace);
   const code = root.toString();
 
@@ -351,7 +351,7 @@ function parser(code, replace, options) {
       // At rule
       case 'atrule':
         if (node.name === 'import') {
-          const parsed = parseImport(node, replace);
+          const parsed = parseImport(node, replace, options);
           const code = parsed.code;
           const path = parsed.path;
           const media = parsed.media;

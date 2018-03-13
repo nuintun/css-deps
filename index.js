@@ -45,7 +45,7 @@ export default function parser(code, replace, options) {
       // At rule
       case 'atrule':
         if (node.name === 'import') {
-          const parsed = parseImport(node, replace);
+          const parsed = parseImport(node, replace, options);
           const code = parsed.code;
           const path = parsed.path;
           const media = parsed.media;

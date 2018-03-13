@@ -17,7 +17,7 @@ const code = `
 `;
 
 console.time('css-deps');
-const parsed = css(code, path => 'test.css', { onpath: (path, prop) => 'test.png' });
+const parsed = css(code, path => 'test.css', { media: true, onpath: (path, prop) => 'test.png' });
 console.timeEnd('css-deps');
 
 console.log(parsed.code);

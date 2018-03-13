@@ -6,10 +6,10 @@
 
 ### Api
 
-* parseDependencies(code:String, replace:Function, options:Object):String
-* parseDependencies(code:String, options:Object):Array
-  * options { compress:Boolean, prifix:String, onpath:Function }
-  * prifix: add prifix before selector
+* parseDependencies(code:String, replace:Function, options:Object):Object
+* parseDependencies(code:String, options:Object):Object
+  * options { compress:Boolean, media:Boolean, onpath:Function }
+  * media: parse import media query
   * onpath: replace css resource file url
 
 ### Example
@@ -32,17 +32,17 @@ body {
 js:
 
 ```js
-var parseDependencies = require('css-deps');
-var deps = parseDependencies(source);
+const parseDependencies = require('css-deps');
+const dependencies = parseDependencies(source).dependencies;
 
 // print dependencies
-console.log(deps);
+console.log(dependencies);
 ```
 
 parser output:
 
 ```js
-['reset.css', 'base.css'];
+[{ path: 'reset.css', media: [] }, { path: 'base.css', media: [] }];
 ```
 
 ## License
