@@ -49,12 +49,27 @@ function object(object) {
 }
 
 /**
+ * @function encode
+ * @param {sting} path
+ * @param {boolean} space
+ * @returns {string}
+ */
+function encode(path, space) {
+  path = path.replace(/['"]/g, '\\$&');
+
+  // Encode space
+  if (space) path = path.replace(/\s/g, '%20');
+
+  return path;
+}
+
+/**
  * @function isVaildValue
  * @param {any} value
  * @returns {boolean}
  */
 function isVaildValue(value) {
-  if (string(value) && value.trim()) {
+  if (value && string(value)) {
     return true;
   }
 
@@ -110,7 +125,7 @@ function replaceImport(node, replace, root) {
     const returned = replace(node.value);
 
     if (isVaildValue(returned)) {
-      node.value = returned;
+      node.value = encode(returned, node.type === 'word');
     } else if (returned === false) {
       root.removeAll();
     }
@@ -190,7 +205,7 @@ function replaceAssets(node, onpath, prop) {
   const returned = onpath(node.value, prop);
 
   if (isVaildValue(returned)) {
-    node.value = returned;
+    node.value = encode(returned, node.type === 'word');
   }
 }
 
@@ -268,7 +283,7 @@ function parseAssets(rule, onpath) {
                         const returned = onpath(value.slice(1), prop);
 
                         if (isVaildValue(returned)) {
-                          node.value = `=${returned}`;
+                          node.value = `=${encode(returned, true)}`;
                         }
                       }
                     }
@@ -280,7 +295,7 @@ function parseAssets(rule, onpath) {
                     const returned = onpath(value.slice(4), prop);
 
                     if (isVaildValue(returned)) {
-                      node.value = `src=${returned}`;
+                      node.value = `src=${encode(returned, true)}`;
                     }
                   }
                 }
