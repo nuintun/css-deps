@@ -169,6 +169,7 @@ function parseImport(node, replace) {
  * @version 2018/03/13
  */
 
+// CSS property with assets
 const PROPS = new Set([
   'filter',
   'cursor',
