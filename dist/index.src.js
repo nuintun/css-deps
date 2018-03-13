@@ -49,6 +49,19 @@ function object(object) {
 }
 
 /**
+ * @function isVaildValue
+ * @param {any} value
+ * @returns {boolean}
+ */
+function isVaildValue(value) {
+  if (string(value) && value.trim()) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * @module parse-import
  * @license MIT
  * @version 2018/03/12
@@ -96,7 +109,7 @@ function replaceImport(node, replace, root) {
   if (replace) {
     const returned = replace(node.value);
 
-    if (string(returned) && returned.trim()) {
+    if (isVaildValue(returned)) {
       node.value = returned;
     } else if (returned === false) {
       root.removeAll();
@@ -175,9 +188,26 @@ const PROPS = new Set([
 function replaceAssets(node, onpath, prop) {
   const returned = onpath(node.value, prop);
 
-  if (string(returned) && returned.trim()) {
+  if (isVaildValue(returned)) {
     node.value = returned;
   }
+}
+
+/**
+ * @function isAsset
+ * @param {Object} node
+ * @returns {boolean}
+ */
+function isAsset(node) {
+  if (node) {
+    const type = node.type;
+
+    if (type === 'string' || type === 'word') {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -224,17 +254,31 @@ function parseAssets(rule, onpath) {
               node.each(node => {
                 const value = node.value;
 
-                if (node.type === 'word' && value.startsWith('src=')) {
-                  if (value === 'src=') {
-                    const next = node.next();
+                if (node.type === 'word' && /^src(?:\s*=|$)/.test(value)) {
+                  if (value === 'src') {
+                    node = node.next();
 
-                    if (next && next.type === 'string') {
-                      replaceAssets(next, onpath, prop);
+                    if (node) {
+                      if (node.value === '=') {
+                        node = node.next();
+
+                        isAsset(node) && replaceAssets(node, onpath, prop);
+                      } else {
+                        const returned = onpath(value.slice(1), prop);
+
+                        if (isVaildValue(returned)) {
+                          node.value = `=${returned}`;
+                        }
+                      }
                     }
+                  } else if (value === 'src=') {
+                    node = node.next();
+
+                    isAsset(node) && replaceAssets(node, onpath, prop);
                   } else {
                     const returned = onpath(value.slice(4), prop);
 
-                    if (string(returned) && returned.trim()) {
+                    if (isVaildValue(returned)) {
                       node.value = `src=${returned}`;
                     }
                   }
