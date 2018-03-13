@@ -8,7 +8,7 @@
 
 * parseDependencies(code:String, replace:Function, options:Object):Object
 * parseDependencies(code:String, options:Object):Object
-  * options { compress:Boolean, media:Boolean, onpath:Function }
+  * options { media:Boolean, onpath:Function }
   * media: parse import media query
   * onpath: replace css resource file url
 
