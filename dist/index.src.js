@@ -51,16 +51,15 @@ function object(object) {
 /**
  * @function encode
  * @param {sting} path
- * @param {boolean} space
+ * @param {boolean} word
  * @returns {string}
  */
-function encode(path, space) {
-  path = path.replace(/['"]/g, '\\$&');
-
-  // Encode space
-  if (space) path = path.replace(/\s/g, '%20');
-
-  return path;
+function encode(path, word) {
+  if (word && /[ ,]/.test(path)) {
+    return JSON.stringify(path);
+  } else {
+    return path.replace(/['"]/g, '\\$&');
+  }
 }
 
 /**
