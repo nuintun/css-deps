@@ -315,10 +315,8 @@ function parser(code, replace, options) {
   let syntax;
   const dependencies = [];
 
-  if (object(replace)) {
+  if (replace && object(replace)) {
     options = replace;
-    replace = null;
-  } else if (!fn(replace)) {
     replace = null;
   }
 
@@ -329,6 +327,8 @@ function parser(code, replace, options) {
   } catch (error) {
     return { code, dependencies };
   }
+
+  if (replace && !fn(replace)) replace = null;
 
   const onpath = fn(options.onpath) ? options.onpath : null;
 

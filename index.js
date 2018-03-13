@@ -23,10 +23,8 @@ export default function parser(code, replace, options) {
   let syntax;
   const dependencies = [];
 
-  if (utils.object(replace)) {
+  if (replace && utils.object(replace)) {
     options = replace;
-    replace = null;
-  } else if (!utils.fn(replace)) {
     replace = null;
   }
 
@@ -37,6 +35,8 @@ export default function parser(code, replace, options) {
   } catch (error) {
     return { code, dependencies };
   }
+
+  if (replace && !utils.fn(replace)) replace = null;
 
   const onpath = utils.fn(options.onpath) ? options.onpath : null;
 
