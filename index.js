@@ -23,13 +23,11 @@ export default function parser(code, replace, options) {
   let syntax;
   const dependencies = [];
 
-  if (replace) {
-    if (utils.object(replace)) {
-      options = replace;
-      replace = null;
-    } else if (!utils.fn(replace)) {
-      replace = null;
-    }
+  if (utils.object(replace)) {
+    options = replace;
+    replace = null;
+  } else if (!utils.fn(replace)) {
+    replace = null;
   }
 
   options = options || {};

@@ -315,13 +315,11 @@ function parser(code, replace, options) {
   let syntax;
   const dependencies = [];
 
-  if (replace) {
-    if (object(replace)) {
-      options = replace;
-      replace = null;
-    } else if (!fn(replace)) {
-      replace = null;
-    }
+  if (object(replace)) {
+    options = replace;
+    replace = null;
+  } else if (!fn(replace)) {
+    replace = null;
   }
 
   options = options || {};
