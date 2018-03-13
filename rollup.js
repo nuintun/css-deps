@@ -24,6 +24,7 @@ const banner = `/**
 rollup
   .rollup({
     input: 'index.js',
+    preferConst: true,
     external: ['postcss', 'postcss-values-parser']
   })
   .then(function(bundle) {

@@ -7,7 +7,7 @@
 import * as postcss from 'postcss';
 import * as utils from './lib/utils';
 import parseImport from './lib/parse-import';
-import postcssValuesParser from 'postcss-values-parser';
+import parseAssets from './lib/parse-assets';
 
 /**
  * @function parser
@@ -58,35 +58,7 @@ export default function parser(code, replace, options) {
         break;
       // Declaration
       case 'decl':
-        console.log(postcssValuesParser(node.value).parse());
-
-        if (onpath) {
-          // https://github.com/postcss/postcss-url/blob/master/src/lib/decl-processor.js#L21
-          const URL_PATTERNS = [
-            /url\(\s*(['"]?)([^"')]+)\1\s*\)/gi,
-            /[(,\s]+src\s*=\s*(['"]?)([^"')]+)\1/gi // AlphaImageLoader
-          ];
-
-          // Parse url
-          URL_PATTERNS.some(pattern => {
-            if (pattern.test(node.value)) {
-              node.value = node.value.replace(pattern, (source, quote, url) => {
-                const returned = onpath(url, node.prop);
-
-                // Replace resource path
-                if (utils.string(returned) && returned.trim()) {
-                  return source.replace(url, returned);
-                } else {
-                  return source;
-                }
-              });
-
-              return true;
-            }
-
-            return false;
-          });
-        }
+        parseAssets(node, onpath);
         break;
     }
   });

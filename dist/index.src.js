@@ -9,8 +9,8 @@
 
 'use strict';
 
-var postcssValuesParser = require('postcss-values-parser');
-var postcss = require('postcss');
+const postcssValuesParser = require('postcss-values-parser');
+const postcss = require('postcss');
 
 /**
  * @module utils
@@ -87,12 +87,12 @@ function parseMedia(root) {
 }
 
 /**
- * @function execReplace
+ * @function replaceImport
+ * @param {Object} node
  * @param {Function} replace
  * @param {Object} root
- * @param {Object} node
  */
-function execReplace(replace, root, node) {
+function replaceImport(node, replace, root) {
   if (replace) {
     const returned = replace(node.value);
 
@@ -124,12 +124,12 @@ function parseUrl(root, replace) {
   if (node.type === 'string') {
     url = node.value;
 
-    execReplace(replace, root, node);
+    replaceImport(node, replace, root);
   } else if (node.type === 'func' && node.value === 'url') {
     node = node.nodes[1];
     url = node.value;
 
-    execReplace(replace, root, node);
+    replaceImport(node, replace, root);
   }
 
   return url;
@@ -143,11 +143,109 @@ function parseUrl(root, replace) {
  */
 function parseImport(node, replace) {
   const root = postcssValuesParser(node.params).parse();
-  const path = parseUrl(root, replace);
   const media = parseMedia(root);
+  const path = parseUrl(root, replace);
   const code = root.toString();
 
   return { path, media, code };
+}
+
+/**
+ * @module parse-assets
+ * @license MIT
+ * @version 2018/03/13
+ */
+
+const PROPS = new Set([
+  'filter',
+  'cursor',
+  'background',
+  'background-image',
+  'border-image',
+  'border-image-source',
+  'list-style',
+  'list-style-image'
+]);
+
+/**
+ * @function execReplace
+ * @param {Object} node
+ * @param {Function} onpath
+ */
+function replaceAssets(node, onpath, prop) {
+  const returned = onpath(node.value, prop);
+
+  if (string(returned) && returned.trim()) {
+    node.value = returned;
+  }
+}
+
+/**
+ * @function parseAssets
+ * @param {Object} rule
+ * @param {Function} onpath
+ */
+function parseAssets(rule, onpath) {
+  const prop = rule.prop;
+
+  if (onpath && PROPS.has(prop.replace(/^-\w+-/, ''))) {
+    const root = postcssValuesParser(rule.value).parse();
+
+    root.walk(node => {
+      if (node.type === 'func') {
+        switch (node.value) {
+          case 'url':
+          case 'image':
+            // Get first param
+            node = node.nodes[1];
+
+            // Get type
+            const type = node.type;
+
+            if (type === 'string' || type === 'word') {
+              replaceAssets(node, onpath, prop);
+            }
+            break;
+          case 'image-set':
+            node.each(node => {
+              if (node.type === 'string') {
+                const prev = node.prev();
+                const prevType = prev.type;
+
+                if (prevType === 'comma' || prevType === 'paren') {
+                  replaceAssets(node, onpath, prop);
+                }
+              }
+            });
+            break;
+          default:
+            // AlphaImageLoader
+            if (/\.?AlphaImageLoader$/i.test(node.value)) {
+              node.each(node => {
+                const value = node.value;
+
+                if (node.type === 'word' && value.startsWith('src=')) {
+                  if (value === 'src=') {
+                    const next = node.next();
+
+                    next && replaceAssets(next, onpath, prop);
+                  } else {
+                    const returned = onpath(value.slice(4), prop);
+
+                    if (string(returned) && returned.trim()) {
+                      node.value = `src=${returned}`;
+                    }
+                  }
+                }
+              });
+            }
+            break;
+        }
+      }
+    });
+
+    rule.value = root.toString();
+  }
 }
 
 /**
@@ -205,35 +303,7 @@ function parser(code, replace, options) {
         break;
       // Declaration
       case 'decl':
-        console.log(postcssValuesParser(node.value).parse());
-
-        if (onpath) {
-          // https://github.com/postcss/postcss-url/blob/master/src/lib/decl-processor.js#L21
-          const URL_PATTERNS = [
-            /url\(\s*(['"]?)([^"')]+)\1\s*\)/gi,
-            /[(,\s]+src\s*=\s*(['"]?)([^"')]+)\1/gi // AlphaImageLoader
-          ];
-
-          // Parse url
-          URL_PATTERNS.some(pattern => {
-            if (pattern.test(node.value)) {
-              node.value = node.value.replace(pattern, (source, quote, url) => {
-                const returned = onpath(url, node.prop);
-
-                // Replace resource path
-                if (string(returned) && returned.trim()) {
-                  return source.replace(url, returned);
-                } else {
-                  return source;
-                }
-              });
-
-              return true;
-            }
-
-            return false;
-          });
-        }
+        parseAssets(node, onpath);
         break;
     }
   });
