@@ -65,7 +65,7 @@ function parseMedia(root) {
   if (!root.nodes.length) return media;
 
   const start = 1;
-  const values = root.nodes[0].nodes;
+  const values = root.first.nodes;
 
   if (values.length > start) {
     const rest = values.reduce((item, node, index) => {
@@ -115,7 +115,7 @@ function parseUrl(root, replace) {
 
   if (!root.nodes.length) return url;
 
-  const values = root.nodes[0].nodes;
+  const values = root.first.nodes;
 
   if (!values.length) return url;
 
