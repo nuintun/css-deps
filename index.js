@@ -17,11 +17,11 @@ import parseAssets from './lib/parse-assets';
  * @returns {Object}
  */
 export default function parser(code, replace, options) {
-  // Is buffer
-  if (Buffer.isBuffer(code)) code = code.toString();
-
   let syntax;
   const dependencies = [];
+
+  // Is buffer
+  if (Buffer.isBuffer(code)) code = code.toString();
 
   if (replace && utils.object(replace)) {
     options = replace;

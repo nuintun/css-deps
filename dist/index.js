@@ -321,11 +321,11 @@ function parseAssets(rule, onpath) {
  * @returns {Object}
  */
 function parser(code, replace, options) {
-  // Is buffer
-  if (Buffer.isBuffer(code)) code = code.toString();
-
   let syntax;
   const dependencies = [];
+
+  // Is buffer
+  if (Buffer.isBuffer(code)) code = code.toString();
 
   if (replace && object(replace)) {
     options = replace;
