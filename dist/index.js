@@ -118,6 +118,7 @@ function parseMedia(root) {
  * @param {Object} node
  * @param {Function} replace
  * @param {Object} root
+ * @returns {string}
  */
 function replaceImport(node, replace, root) {
   if (replace) {
@@ -129,6 +130,8 @@ function replaceImport(node, replace, root) {
       root.removeAll();
     }
   }
+
+  return node.value;
 }
 
 /**
@@ -149,14 +152,9 @@ function parseUrl(root, replace) {
   let node = values[0];
 
   if (node.type === 'string') {
-    url = node.value;
-
-    replaceImport(node, replace, root);
+    url = replaceImport(node, replace, root);
   } else if (node.type === 'func' && node.value === 'url') {
-    node = node.nodes[1];
-    url = node.value;
-
-    replaceImport(node, replace, root);
+    url = replaceImport(node.nodes[1], replace, root);
   }
 
   return url;
