@@ -18,10 +18,13 @@ const code = `
 }
 `;
 
+let id = 1;
+let image = 1;
+
 console.time('css-deps');
-const parsed = css(code, path => 'test.css', { media: true, onpath: (path, prop) => 'test.png' });
+const parsed = css(code, path => `test-${id++}.css`, { media: true, onpath: (path, prop) => `test-${image++}.png` });
 console.timeEnd('css-deps');
 
 console.log(parsed.code);
-console.log('-------------------------------------------------------------------------------------------------------');
+console.log(new Array(106).join('-'));
 console.log(JSON.stringify(parsed.dependencies, null, 2));
