@@ -1,4 +1,4 @@
-const css = require('../dist/index.src');
+const css = require('../dist/index');
 
 const code = `
 @charset "utf-8";

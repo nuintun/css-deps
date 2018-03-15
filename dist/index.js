@@ -6,4 +6,372 @@
  * @description Transform css and get css dependences
  * @see https://nuintun.github.io/css-deps
  */
-"use strict";const postcssValuesParser=require("postcss-values-parser"),postcss=require("postcss"),toString=Object.prototype.toString;function string(e){return"[object String]"===toString.call(e)}function fn(e){return"[object Function]"===toString.call(e)}function object(e){return"[object Object]"===toString.call(e)}function encode(e,t){return t&&/[ ,]/.test(e)?JSON.stringify(e):e.replace(/['"]/g,"\\$&")}function isVaildValue(e){return!(!e||!string(e))}function parseMedia(e){const t=[];if(!e.nodes.length)return t;const s=e.first.nodes;if(s.length>1){const e=s.reduce((e,s,r)=>r<1?"":"comma"===s.type?(t.push(e.trim()),""):e+s,"");t.push(e.trim())}return t}function replaceImport(e,t,s){if(t){const r=t(e.value);isVaildValue(r)?e.value=encode(r,"word"===e.type):!1===r&&s.removeAll()}}function parseUrl(e,t){let s="";if(!e.nodes.length)return s;const r=e.first.nodes;if(!r.length)return s;let n=r[0];return"string"===n.type?(s=n.value,replaceImport(n,t,e)):"func"===n.type&&"url"===n.value&&(s=(n=n.nodes[1]).value,replaceImport(n,t,e)),s}function parseImport(e,t,s){const r=postcssValuesParser(e.params).parse(),n=s.media?parseMedia(r):[];return{path:parseUrl(r,t),media:n,code:r.toString()}}const PROPS=new Set(["filter","cursor","background","background-image","border-image","border-image-source","list-style","list-style-image"]);function replaceAssets(e,t,s){const r=t(e.value,s);isVaildValue(r)&&(e.value=encode(r,"word"===e.type))}function isAsset(e){if(e){const t=e.type;if("string"===t||"word"===t)return!0}return!1}function parseAssets(e,t){const s=e.prop;if(t&&PROPS.has(s.replace(/^-\w+-/,""))){const r=postcssValuesParser(e.value).parse();r.walk(e=>{if("func"===e.type)switch(e.value){case"url":case"image":const r=(e=e.nodes[1]).type;"string"!==r&&"word"!==r||replaceAssets(e,t,s);break;case"image-set":e.each(e=>{if("string"===e.type){const r=e.prev().type;"comma"!==r&&"paren"!==r||replaceAssets(e,t,s)}});break;default:/\.?AlphaImageLoader$/i.test(e.value)&&e.each(e=>{const r=e.value;if("word"===e.type&&/^src(?:\s*=|$)/.test(r))if("src"===r){if(e=e.next())if("="===e.value)isAsset(e=e.next())&&replaceAssets(e,t,s);else{const n=t(r.slice(1),s);isVaildValue(n)&&(e.value=`=${encode(n,!0)}`)}}else if("src="===r)isAsset(e=e.next())&&replaceAssets(e,t,s);else{const n=t(r.slice(4),s);isVaildValue(n)&&(e.value=`src=${encode(n,!0)}`)}})}}),e.value=r.toString()}}function parser(e,t,s){let r;Buffer.isBuffer(e)&&(e=e.toString());const n=[];t&&object(t)&&(s=t,t=null),s=s||{};try{r=postcss.parse(e,s.postcss)}catch(t){return{code:e,dependencies:n}}t&&!fn(t)&&(t=null);const a=fn(s.onpath)?s.onpath:null;return r.walk(e=>{switch(e.type){case"atrule":if("import"===e.name){const r=parseImport(e,t,s),a=r.code,c=r.path,o=r.media;n.push({path:c,media:o}),a?e.params=a:e.remove()}break;case"decl":parseAssets(e,a)}}),{code:e=r.toResult().css,dependencies:n}}module.exports=parser;
+
+'use strict';
+
+const postcssValuesParser = require('postcss-values-parser');
+const postcss = require('postcss');
+
+/**
+ * @module utils
+ * @license MIT
+ * @version 2017/11/10
+ */
+
+// Variable declaration
+const toString = Object.prototype.toString;
+
+/**
+ * @function string
+ * @param {any} string
+ * @returns {boolean}
+ */
+function string(string) {
+  return toString.call(string) === '[object String]';
+}
+
+/**
+ * @function fn
+ * @param {any} fn
+ * @returns {boolean}
+ */
+function fn(fn) {
+  return toString.call(fn) === '[object Function]';
+}
+
+/**
+ * @function object
+ * @param {any} object
+ * @returns {boolean}
+ */
+function object(object) {
+  return toString.call(object) === '[object Object]';
+}
+
+/**
+ * @function encode
+ * @param {sting} path
+ * @param {boolean} word
+ * @returns {string}
+ */
+function encode(path, word) {
+  if (word && /[ ,]/.test(path)) {
+    return JSON.stringify(path);
+  } else {
+    return path.replace(/['"]/g, '\\$&');
+  }
+}
+
+/**
+ * @function isVaildValue
+ * @param {any} value
+ * @returns {boolean}
+ */
+function isVaildValue(value) {
+  if (value && string(value)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * @module parse-import
+ * @license MIT
+ * @version 2018/03/12
+ */
+
+/**
+ * @function parseMedia
+ * @param {Object} root
+ * @returns {Array}
+ */
+function parseMedia(root) {
+  const media = [];
+
+  if (!root.nodes.length) return media;
+
+  const start = 1;
+  const values = root.first.nodes;
+
+  if (values.length > start) {
+    const rest = values.reduce((item, node, index) => {
+      if (index < start) return '';
+
+      if (node.type === 'comma') {
+        media.push(item.trim());
+
+        return '';
+      }
+
+      return item + node;
+    }, '');
+
+    media.push(rest.trim());
+  }
+
+  return media;
+}
+
+/**
+ * @function replaceImport
+ * @param {Object} node
+ * @param {Function} replace
+ * @param {Object} root
+ */
+function replaceImport(node, replace, root) {
+  if (replace) {
+    const returned = replace(node.value);
+
+    if (isVaildValue(returned)) {
+      node.value = encode(returned, node.type === 'word');
+    } else if (returned === false) {
+      root.removeAll();
+    }
+  }
+}
+
+/**
+ * @function parseUrl
+ * @param {Object} root
+ * @param {Function} replace
+ * @returns {string}
+ */
+function parseUrl(root, replace) {
+  let url = '';
+
+  if (!root.nodes.length) return url;
+
+  const values = root.first.nodes;
+
+  if (!values.length) return url;
+
+  let node = values[0];
+
+  if (node.type === 'string') {
+    url = node.value;
+
+    replaceImport(node, replace, root);
+  } else if (node.type === 'func' && node.value === 'url') {
+    node = node.nodes[1];
+    url = node.value;
+
+    replaceImport(node, replace, root);
+  }
+
+  return url;
+}
+
+/**
+ * @function parseImport
+ * @param {Object} node
+ * @param {Function} replace
+ * @returns {Array}
+ */
+function parseImport(node, replace, options) {
+  const root = postcssValuesParser(node.params).parse();
+  const media = options.media ? parseMedia(root) : [];
+  const path = parseUrl(root, replace);
+  const code = root.toString();
+
+  return { path, media, code };
+}
+
+/**
+ * @module parse-assets
+ * @license MIT
+ * @version 2018/03/13
+ */
+
+// CSS property with assets
+const PROPS = new Set([
+  'filter',
+  'cursor',
+  'background',
+  'background-image',
+  'border-image',
+  'border-image-source',
+  'list-style',
+  'list-style-image'
+]);
+
+/**
+ * @function execReplace
+ * @param {Object} node
+ * @param {Function} onpath
+ */
+function replaceAssets(node, onpath, prop) {
+  const returned = onpath(node.value, prop);
+
+  if (isVaildValue(returned)) {
+    node.value = encode(returned, node.type === 'word');
+  }
+}
+
+/**
+ * @function isAsset
+ * @param {Object} node
+ * @returns {boolean}
+ */
+function isAsset(node) {
+  if (node) {
+    const type = node.type;
+
+    if (type === 'string' || type === 'word') {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * @function parseAssets
+ * @param {Object} rule
+ * @param {Function} onpath
+ */
+function parseAssets(rule, onpath) {
+  const prop = rule.prop;
+
+  if (onpath && PROPS.has(prop.replace(/^-\w+-/, ''))) {
+    const root = postcssValuesParser(rule.value).parse();
+
+    root.walk(node => {
+      if (node.type === 'func') {
+        switch (node.value) {
+          case 'url':
+          case 'image':
+            // Get first param
+            node = node.nodes[1];
+
+            // Get type
+            const type = node.type;
+
+            if (type === 'string' || type === 'word') {
+              replaceAssets(node, onpath, prop);
+            }
+            break;
+          case 'image-set':
+            node.each(node => {
+              if (node.type === 'string') {
+                const prev = node.prev();
+                const prevType = prev.type;
+
+                if (prevType === 'comma' || prevType === 'paren') {
+                  replaceAssets(node, onpath, prop);
+                }
+              }
+            });
+            break;
+          default:
+            // AlphaImageLoader
+            if (/\.?AlphaImageLoader$/i.test(node.value)) {
+              node.each(node => {
+                const value = node.value;
+
+                if (node.type === 'word' && /^src(?:\s*=|$)/.test(value)) {
+                  if (value === 'src') {
+                    node = node.next();
+
+                    if (node) {
+                      if (node.value === '=') {
+                        node = node.next();
+
+                        isAsset(node) && replaceAssets(node, onpath, prop);
+                      } else {
+                        const returned = onpath(value.slice(1), prop);
+
+                        if (isVaildValue(returned)) {
+                          node.value = `=${encode(returned, true)}`;
+                        }
+                      }
+                    }
+                  } else if (value === 'src=') {
+                    node = node.next();
+
+                    isAsset(node) && replaceAssets(node, onpath, prop);
+                  } else {
+                    const returned = onpath(value.slice(4), prop);
+
+                    if (isVaildValue(returned)) {
+                      node.value = `src=${encode(returned, true)}`;
+                    }
+                  }
+                }
+              });
+            }
+            break;
+        }
+      }
+    });
+
+    rule.value = root.toString();
+  }
+}
+
+/**
+ * @module index
+ * @license MIT
+ * @version 2017/11/10
+ */
+
+/**
+ * @function parser
+ * @param {string} code
+ * @param {Function} replace
+ * @param {object} options
+ * @returns {Object}
+ */
+function parser(code, replace, options) {
+  // Is buffer
+  if (Buffer.isBuffer(code)) code = code.toString();
+
+  let syntax;
+  const dependencies = [];
+
+  if (replace && object(replace)) {
+    options = replace;
+    replace = null;
+  }
+
+  options = options || {};
+
+  try {
+    syntax = postcss.parse(code, options.postcss);
+  } catch (error) {
+    return { code, dependencies };
+  }
+
+  if (replace && !fn(replace)) replace = null;
+
+  const onpath = fn(options.onpath) ? options.onpath : null;
+
+  syntax.walk(node => {
+    switch (node.type) {
+      // At rule
+      case 'atrule':
+        if (node.name === 'import') {
+          const parsed = parseImport(node, replace, options);
+          const code = parsed.code;
+          const path = parsed.path;
+          const media = parsed.media;
+
+          dependencies.push({ path, media });
+          code ? (node.params = code) : node.remove();
+        }
+        break;
+      // Declaration
+      case 'decl':
+        parseAssets(node, onpath);
+        break;
+    }
+  });
+
+  // Get css code
+  code = syntax.toResult().css;
+
+  // Returned
+  return { code, dependencies };
+}
+
+module.exports = parser;
