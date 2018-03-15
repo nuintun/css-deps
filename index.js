@@ -11,7 +11,7 @@ import parseAssets from './lib/parse-assets';
 
 /**
  * @function parser
- * @param {string} code
+ * @param {string|Buffer} code
  * @param {Function} replace
  * @param {object} options
  * @returns {Object}

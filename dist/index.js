@@ -315,7 +315,7 @@ function parseAssets(rule, onpath) {
 
 /**
  * @function parser
- * @param {string} code
+ * @param {string|Buffer} code
  * @param {Function} replace
  * @param {object} options
  * @returns {Object}
