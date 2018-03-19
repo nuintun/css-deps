@@ -22,11 +22,11 @@
   "main": "dist/index",
   "keywords": ["css", "dependencies"],
   "dependencies": {
-    "postcss": "^6.0.19",
+    "postcss": "^6.0.20",
     "postcss-values-parser": "^1.4.0"
   },
   "devDependencies": {
-    "rollup": "^0.56.5"
+    "rollup": "^0.57.1"
   },
   "readmeFilename": "README.md"
 }
