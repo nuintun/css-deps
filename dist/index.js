@@ -199,7 +199,7 @@ const PROPS = new Set([
  * @param {Function} onpath
  */
 function replaceAssets(node, onpath, prop) {
-  const returned = onpath(node.value, prop);
+  const returned = onpath(prop, node.value);
 
   if (isVaildValue(returned)) {
     node.value = encode(returned, node.type === 'word');
