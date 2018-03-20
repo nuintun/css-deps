@@ -22,7 +22,10 @@ let id = 1;
 let image = 1;
 
 console.time('css-deps');
-const parsed = css(code, path => `test-${id++}.css`, { media: true, onpath: (prop, path) => `test-${image++}.png` });
+const parsed = css(code, (path, media) => `test-${id++}.css`, {
+  media: true,
+  onpath: (prop, path) => `test-${image++}.png`
+});
 console.timeEnd('css-deps');
 
 console.log(parsed.code);
