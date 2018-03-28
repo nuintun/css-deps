@@ -2,6 +2,8 @@
 
 > Transform css and get css dependences
 >
+> [![NPM Version][npm-image]][npm-url]
+> [![Download Status][download-image]][npm-url]
 > [![Dependencies][david-image]][david-url]
 
 ### Api
@@ -49,5 +51,8 @@ parser output:
 
 [MIT](LICENSE)
 
+[npm-image]: http://img.shields.io/npm/v/css-deps.svg?style=flat-square
+[npm-url]: https://www.npmjs.org/package/css-deps
+[download-image]: http://img.shields.io/npm/dm/css-deps.svg?style=flat-square
 [david-image]: http://img.shields.io/david/nuintun/css-deps.svg?style=flat-square
 [david-url]: https://david-dm.org/nuintun/css-deps
