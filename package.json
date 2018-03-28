@@ -1,6 +1,6 @@
 {
   "name": "@nuintun/css-deps",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Transform css and get css dependences",
   "author": {
     "name": "nuintun",
@@ -22,7 +22,7 @@
   "main": "index",
   "keywords": ["css", "dependencies"],
   "dependencies": {
-    "postcss": "^6.0.19"
+    "postcss": "^6.0.21"
   },
   "readmeFilename": "README.md"
 }
