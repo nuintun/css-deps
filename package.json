@@ -1,6 +1,6 @@
 {
   "name": "@nuintun/css-deps",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Transform css and get css dependences",
   "author": {
     "name": "nuintun",
