@@ -41,7 +41,7 @@ benchmark
 # jsbeautifyrc
 .jsbeautifyrc
 
-# npm lock
+# npm lock file
 package-lock.json
 
 # src file and dist dev file
