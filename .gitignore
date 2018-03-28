@@ -29,5 +29,5 @@ node_modules
 # vscode
 .vscode
 
-# npm lock
+# npm lock file
 package-lock.json
