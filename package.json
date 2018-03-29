@@ -9,17 +9,15 @@
   "engines": {
     "node": ">=4.0.0"
   },
-  "homepage": "https://nuintun.github.io/css-deps",
   "repository": {
     "type": "git",
-    "url": "git://github.com/nuintun/css-deps.git"
+    "url": "git+https://github.com/nuintun/css-deps.git"
   },
   "bugs": {
-    "url": "https://github.com/nuintun/css-deps/issues",
-    "email": "nuintun@qq.com"
+    "url": "https://github.com/nuintun/css-deps/issues"
   },
   "license": "MIT",
-  "main": "dist/index",
+  "main": "dist/index.js",
   "keywords": ["css", "dependencies"],
   "dependencies": {
     "postcss": "^6.0.21",
@@ -28,5 +26,5 @@
   "devDependencies": {
     "rollup": "^0.57.1"
   },
-  "readmeFilename": "README.md"
+  "homepage": "https://github.com/nuintun/css-deps#readme"
 }
