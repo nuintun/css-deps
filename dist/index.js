@@ -3,8 +3,8 @@
  * @author nuintun
  * @license MIT
  * @version 2.0.0
- * @description Transform css and get css dependences
- * @see https://nuintun.github.io/css-deps
+ * @description Transform css and get css dependences.
+ * @see https://github.com/nuintun/css-deps#readme
  */
 
 'use strict';
