@@ -1,7 +1,7 @@
 {
   "name": "@nuintun/css-deps",
-  "version": "1.1.0",
-  "description": "Transform css and get css dependences",
+  "version": "1.2.0",
+  "description": "Transform css and get css dependences.",
   "author": {
     "name": "nuintun",
     "email": "nuintun@qq.com"
@@ -9,14 +9,12 @@
   "engines": {
     "node": ">=4.0.0"
   },
-  "homepage": "https://nuintun.github.io/css-deps",
   "repository": {
     "type": "git",
-    "url": "git://github.com/nuintun/css-deps.git"
+    "url": "git+https://github.com/nuintun/css-deps.git"
   },
   "bugs": {
-    "url": "https://github.com/nuintun/css-deps/issues",
-    "email": "nuintun@qq.com"
+    "url": "https://github.com/nuintun/css-deps/issues"
   },
   "license": "MIT",
   "main": "index.js",
@@ -24,5 +22,5 @@
   "dependencies": {
     "postcss": "^6.0.21"
   },
-  "readmeFilename": "README.md"
+  "homepage": "https://github.com/nuintun/through#readme"
 }
