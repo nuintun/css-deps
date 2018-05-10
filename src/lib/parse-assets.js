@@ -9,6 +9,7 @@ import postcssValuesParser from 'postcss-values-parser';
 
 // CSS property with assets
 const PROPS = new Set([
+  'src',
   'filter',
   'cursor',
   'background',

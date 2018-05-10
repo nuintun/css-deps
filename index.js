@@ -185,6 +185,7 @@ function parseImport(node, replace, options) {
 
 // CSS property with assets
 const PROPS = new Set([
+  'src',
   'filter',
   'cursor',
   'background',
