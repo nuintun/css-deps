@@ -18,14 +18,17 @@
   },
   "license": "MIT",
   "main": "index.js",
-  "keywords": ["css", "dependencies"],
+  "keywords": [
+    "css",
+    "dependencies"
+  ],
   "dependencies": {
-    "postcss": "^6.0.22",
+    "postcss": "^7.0.1",
     "postcss-values-parser": "^1.5.0"
   },
   "devDependencies": {
-    "rollup": "^0.59.4",
-    "fs-extra": "^6.0.1"
+    "rollup": "^0.63.4",
+    "fs-extra": "^7.0.0"
   },
   "scripts": {
     "prepublishOnly": "node rollup.js"
