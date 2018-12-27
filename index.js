@@ -9,8 +9,8 @@
 
 'use strict';
 
-const postcssValuesParser = require('postcss-values-parser');
 const postcss = require('postcss');
+const postcssValuesParser = require('postcss-values-parser');
 
 /**
  * @module utils

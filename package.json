@@ -23,12 +23,12 @@
     "dependencies"
   ],
   "dependencies": {
-    "postcss": "^7.0.4",
+    "postcss": "^7.0.7",
     "postcss-values-parser": "^2.0.0"
   },
   "devDependencies": {
-    "rollup": "^0.66.2",
-    "fs-extra": "^7.0.0"
+    "rollup": "^0.68.2",
+    "fs-extra": "^7.0.1"
   },
   "scripts": {
     "prepublishOnly": "node rollup.js"
