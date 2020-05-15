@@ -14,7 +14,7 @@ const code = `
 :root .fg,
 .bg {
   -moz-background-image: image-set(url(img/test.png) 1x, url("img/test-2x.png") 2x, url(my-img-print.png) 600dpi);
-  -ms-filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src="rain1977.gif", sizingMethod="scale");
+  -ms-filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src = "rain1977.gif", sizingMethod="scale");
 }
 
 @font-face {

@@ -46,15 +46,15 @@ export default function parser(code, replace, options) {
     switch (node.type) {
       // At rule
       case 'atrule':
-        if (node.name === 'import') {
-          const parsed = parseImport(node, replace, options);
-          const code = parsed.code;
-          const path = parsed.path;
-          const media = parsed.media;
+        // if (node.name === 'import') {
+        //   const parsed = parseImport(node, replace, options);
+        //   const code = parsed.code;
+        //   const path = parsed.path;
+        //   const media = parsed.media;
 
-          dependencies.push({ path, media });
-          code ? (node.params = code) : node.remove();
-        }
+        //   dependencies.push({ path, media });
+        //   code ? (node.params = code) : node.remove();
+        // }
         break;
       // Declaration
       case 'decl':

@@ -37,7 +37,7 @@ const banner = `/**
 
 const inputOptions = {
   input: 'src/index.js',
-  external: ['postcss', 'postcss-values-parser']
+  external: ['postcss', 'postcss-value-parser']
 };
 
 const outputOptions = {

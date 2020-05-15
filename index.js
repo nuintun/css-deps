@@ -10,7 +10,7 @@
 'use strict';
 
 const postcss = require('postcss');
-const postcssValuesParser = require('postcss-values-parser');
+const postcssValueParser = require('postcss-value-parser');
 
 /**
  * @module utils
@@ -76,108 +76,6 @@ function isVaildValue(value) {
 }
 
 /**
- * @module parse-import
- * @license MIT
- * @version 2018/03/12
- */
-
-/**
- * @function parseMedia
- * @param {Object} root
- * @returns {Array}
- */
-function parseMedia(root) {
-  const media = [];
-
-  if (!root.nodes.length) return media;
-
-  const start = 1;
-  const values = root.first.nodes;
-
-  if (values.length > start) {
-    const rest = values.reduce((item, node, index) => {
-      if (index < start) return '';
-
-      if (node.type === 'comma') {
-        media.push(item.trim());
-
-        return '';
-      }
-
-      return item + node;
-    }, '');
-
-    media.push(rest.trim());
-  }
-
-  return media;
-}
-
-/**
- * @function replaceImport
- * @param {Object} node
- * @param {Array} media
- * @param {Function} replace
- * @param {Object} root
- * @returns {string}
- */
-function replaceImport(node, media, replace, root) {
-  if (replace) {
-    const returned = replace(node.value, media);
-
-    if (isVaildValue(returned)) {
-      node.value = encode(returned, node.type === 'word');
-    } else if (returned === false) {
-      root.removeAll();
-    }
-  }
-
-  return node.value;
-}
-
-/**
- * @function parseUrl
- * @param {Object} root
- * @param {Array} media
- * @param {Function} replace
- * @returns {string}
- */
-function parseUrl(root, media, replace) {
-  let url = '';
-
-  if (!root.nodes.length) return url;
-
-  const values = root.first.nodes;
-
-  if (!values.length) return url;
-
-  let node = values[0];
-
-  if (node.type === 'string') {
-    url = replaceImport(node, media, replace, root);
-  } else if (node.type === 'func' && node.value === 'url') {
-    url = replaceImport(node.nodes[1], media, replace, root);
-  }
-
-  return url;
-}
-
-/**
- * @function parseImport
- * @param {Object} node
- * @param {Function} replace
- * @returns {Array}
- */
-function parseImport(node, replace, options) {
-  const root = postcssValuesParser(node.params).parse();
-  const media = options.media ? parseMedia(root) : [];
-  const path = parseUrl(root, media, replace);
-  const code = root.toString();
-
-  return { path, media, code };
-}
-
-/**
  * @module parse-assets
  * @license MIT
  * @version 2018/03/13
@@ -210,23 +108,6 @@ function replaceAssets(node, onpath, prop) {
 }
 
 /**
- * @function isAsset
- * @param {Object} node
- * @returns {boolean}
- */
-function isAsset(node) {
-  if (node) {
-    const type = node.type;
-
-    if (type === 'string' || type === 'word') {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
  * @function parseAssets
  * @param {Object} rule
  * @param {Function} onpath
@@ -235,15 +116,15 @@ function parseAssets(rule, onpath) {
   const prop = rule.prop;
 
   if (onpath && PROPS.has(prop.replace(/^-\w+-/, ''))) {
-    const root = postcssValuesParser(rule.value).parse();
+    const root = postcssValueParser(rule.value);
 
     root.walk(node => {
-      if (node.type === 'func') {
+      if (node.type === 'function') {
         switch (node.value) {
           case 'url':
           case 'image':
             // Get first param
-            node = node.nodes[1];
+            node = node.nodes[0];
 
             // Get type
             const type = node.type;
@@ -253,54 +134,20 @@ function parseAssets(rule, onpath) {
             }
             break;
           case 'image-set':
-            node.each(node => {
-              if (node.type === 'string') {
-                const prev = node.prev();
-                const prevType = prev.type;
-
-                if (prevType === 'comma' || prevType === 'paren') {
-                  replaceAssets(node, onpath, prop);
-                }
-              }
+            node.nodes.forEach(node => {
+              console.log(node);
+              // if (node.type === 'string') {
+              //   const prev = node.prev();
+              //   const prevType = prev.type;
+              //   if (prevType === 'comma' || prevType === 'paren') {
+              //     replaceAssets(node, onpath, prop);
+              //   }
+              // }
             });
             break;
           default:
             // AlphaImageLoader
-            if (/\.?AlphaImageLoader$/i.test(node.value)) {
-              node.each(node => {
-                const value = node.value;
-
-                if (node.type === 'word' && /^src(?:\s*=|$)/.test(value)) {
-                  if (value === 'src') {
-                    node = node.next();
-
-                    if (node) {
-                      if (node.value === '=') {
-                        node = node.next();
-
-                        isAsset(node) && replaceAssets(node, onpath, prop);
-                      } else {
-                        const returned = onpath(value.slice(1), prop);
-
-                        if (isVaildValue(returned)) {
-                          node.value = `=${encode(returned, true)}`;
-                        }
-                      }
-                    }
-                  } else if (value === 'src=') {
-                    node = node.next();
-
-                    isAsset(node) && replaceAssets(node, onpath, prop);
-                  } else {
-                    const returned = onpath(value.slice(4), prop);
-
-                    if (isVaildValue(returned)) {
-                      node.value = `src=${encode(returned, true)}`;
-                    }
-                  }
-                }
-              });
-            }
+            if (/\.?AlphaImageLoader$/i.test(node.value)) ;
             break;
         }
       }
@@ -353,15 +200,15 @@ function parser(code, replace, options) {
     switch (node.type) {
       // At rule
       case 'atrule':
-        if (node.name === 'import') {
-          const parsed = parseImport(node, replace, options);
-          const code = parsed.code;
-          const path = parsed.path;
-          const media = parsed.media;
+        // if (node.name === 'import') {
+        //   const parsed = parseImport(node, replace, options);
+        //   const code = parsed.code;
+        //   const path = parsed.path;
+        //   const media = parsed.media;
 
-          dependencies.push({ path, media });
-          code ? (node.params = code) : node.remove();
-        }
+        //   dependencies.push({ path, media });
+        //   code ? (node.params = code) : node.remove();
+        // }
         break;
       // Declaration
       case 'decl':

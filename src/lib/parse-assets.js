@@ -5,7 +5,7 @@
  */
 
 import { encode, isVaildValue } from './utils';
-import postcssValuesParser from 'postcss-values-parser';
+import postcssValueParser from 'postcss-value-parser';
 
 // CSS property with assets
 const PROPS = new Set([
@@ -59,15 +59,15 @@ export default function parseAssets(rule, onpath) {
   const prop = rule.prop;
 
   if (onpath && PROPS.has(prop.replace(/^-\w+-/, ''))) {
-    const root = postcssValuesParser(rule.value).parse();
+    const root = postcssValueParser(rule.value);
 
     root.walk(node => {
-      if (node.type === 'func') {
+      if (node.type === 'function') {
         switch (node.value) {
           case 'url':
           case 'image':
             // Get first param
-            node = node.nodes[1];
+            node = node.nodes[0];
 
             // Get type
             const type = node.type;
@@ -77,53 +77,52 @@ export default function parseAssets(rule, onpath) {
             }
             break;
           case 'image-set':
-            node.each(node => {
-              if (node.type === 'string') {
-                const prev = node.prev();
-                const prevType = prev.type;
-
-                if (prevType === 'comma' || prevType === 'paren') {
-                  replaceAssets(node, onpath, prop);
-                }
+            node.nodes.forEach(node => {
+              console.log(node);
+              if(node.type === 'function' && node.value === 'url'){
+                replaceAssets(node, onpath, prop);
               }
+              // if (node.type === 'string') {
+              //   const prev = node.prev();
+              //   const prevType = prev.type;
+              //   if (prevType === 'comma' || prevType === 'paren') {
+              //     replaceAssets(node, onpath, prop);
+              //   }
+              // }
             });
             break;
           default:
             // AlphaImageLoader
             if (/\.?AlphaImageLoader$/i.test(node.value)) {
-              node.each(node => {
-                const value = node.value;
+              // console.log(node);
 
-                if (node.type === 'word' && /^src(?:\s*=|$)/.test(value)) {
-                  if (value === 'src') {
-                    node = node.next();
-
-                    if (node) {
-                      if (node.value === '=') {
-                        node = node.next();
-
-                        isAsset(node) && replaceAssets(node, onpath, prop);
-                      } else {
-                        const returned = onpath(value.slice(1), prop);
-
-                        if (isVaildValue(returned)) {
-                          node.value = `=${encode(returned, true)}`;
-                        }
-                      }
-                    }
-                  } else if (value === 'src=') {
-                    node = node.next();
-
-                    isAsset(node) && replaceAssets(node, onpath, prop);
-                  } else {
-                    const returned = onpath(value.slice(4), prop);
-
-                    if (isVaildValue(returned)) {
-                      node.value = `src=${encode(returned, true)}`;
-                    }
-                  }
-                }
-              });
+              // node.each(node => {
+              //   const value = node.value;
+              //   if (node.type === 'word' && /^src(?:\s*=|$)/.test(value)) {
+              //     if (value === 'src') {
+              //       node = node.next();
+              //       if (node) {
+              //         if (node.value === '=') {
+              //           node = node.next();
+              //           isAsset(node) && replaceAssets(node, onpath, prop);
+              //         } else {
+              //           const returned = onpath(value.slice(1), prop);
+              //           if (isVaildValue(returned)) {
+              //             node.value = `=${encode(returned, true)}`;
+              //           }
+              //         }
+              //       }
+              //     } else if (value === 'src=') {
+              //       node = node.next();
+              //       isAsset(node) && replaceAssets(node, onpath, prop);
+              //     } else {
+              //       const returned = onpath(value.slice(4), prop);
+              //       if (isVaildValue(returned)) {
+              //         node.value = `src=${encode(returned, true)}`;
+              //       }
+              //     }
+              //   }
+              // });
             }
             break;
         }

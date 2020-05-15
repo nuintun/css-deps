@@ -5,7 +5,7 @@
  */
 
 import { encode, isVaildValue } from './utils';
-import postcssValuesParser from 'postcss-values-parser';
+import postcssValueParser from 'postcss-value-parser';
 
 /**
  * @function parseMedia
@@ -95,7 +95,7 @@ function parseUrl(root, media, replace) {
  * @returns {Array}
  */
 export default function parseImport(node, replace, options) {
-  const root = postcssValuesParser(node.params).parse();
+  const root = postcssValueParser(node.params);
   const media = options.media ? parseMedia(root) : [];
   const path = parseUrl(root, media, replace);
   const code = root.toString();
