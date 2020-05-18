@@ -14,7 +14,7 @@ const code = `
 :root .fg,
 .bg {
   -moz-background-image: image-set(url(img/test.png) 1x, url("img/test-2x.png") 2x, url(my-img-print.png) 600dpi);
-  -ms-filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src = "rain1977.gif", sizingMethod="scale");
+  -ms-filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src="rain1977.gif", sizingMethod="scale");
 }
 
 @font-face {
@@ -32,9 +32,9 @@ let id = 1;
 let image = 1;
 
 console.time('css-deps');
-const parsed = css(code, (path, media) => `test-${id++}.css`, {
+const parsed = css(code, () => `test-${id++}.css`, {
   media: true,
-  onpath: (prop, path) => `test-${image++}.png`
+  onpath: () => `test-${image++}.png`
 });
 console.timeEnd('css-deps');
 

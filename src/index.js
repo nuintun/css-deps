@@ -23,7 +23,9 @@ export default function parser(code, replace, options) {
   const dependencies = [];
 
   // Is buffer
-  if (Buffer.isBuffer(code)) code = code.toString();
+  if (Buffer.isBuffer(code)) {
+    code = code.toString();
+  }
 
   if (replace && utils.object(replace)) {
     options = replace;
@@ -38,7 +40,9 @@ export default function parser(code, replace, options) {
     return { code, dependencies };
   }
 
-  if (replace && !utils.fn(replace)) replace = null;
+  if (replace && !utils.fn(replace)) {
+    replace = null;
+  }
 
   const onpath = utils.fn(options.onpath) ? options.onpath : null;
 
@@ -46,15 +50,13 @@ export default function parser(code, replace, options) {
     switch (node.type) {
       // At rule
       case 'atrule':
-        // if (node.name === 'import') {
-        //   const parsed = parseImport(node, replace, options);
-        //   const code = parsed.code;
-        //   const path = parsed.path;
-        //   const media = parsed.media;
+        if (node.name === 'import') {
+          const { code, path, media } = parseImport(node, replace, options);
 
-        //   dependencies.push({ path, media });
-        //   code ? (node.params = code) : node.remove();
-        // }
+          node.params = code;
+
+          dependencies.push({ path, media });
+        }
         break;
       // Declaration
       case 'decl':

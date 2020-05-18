@@ -1,11 +1,11 @@
 /**
  * @module utils
  * @license MIT
- * @version 2017/11/10
+ * @author nuintun
  */
 
 // Variable declaration
-const toString = Object.prototype.toString;
+const { toString } = Object.prototype;
 
 /**
  * @function noop

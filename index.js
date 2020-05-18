@@ -15,11 +15,11 @@ const postcssValueParser = require('postcss-value-parser');
 /**
  * @module utils
  * @license MIT
- * @version 2017/11/10
+ * @author nuintun
  */
 
 // Variable declaration
-const toString = Object.prototype.toString;
+const { toString } = Object.prototype;
 
 /**
  * @function string
@@ -76,9 +76,111 @@ function isVaildValue(value) {
 }
 
 /**
+ * @module parse-import
+ * @license MIT
+ * @author nuintun
+ */
+
+/**
+ * @function parseMedia
+ * @param {Object} node
+ * @returns {Array}
+ */
+function parseMedia(node) {
+  const start = 1;
+  const media = [];
+  const { nodes } = node;
+
+  if (nodes.length <= start) return media;
+
+  const rest = nodes.reduce((meta, node, index) => {
+    if (index < start) return '';
+
+    if (node.type === 'div') {
+      media.push(meta.trim());
+
+      return '';
+    }
+
+    return meta + postcssValueParser.stringify(node);
+  }, '');
+
+  media.push(rest.trim());
+
+  return media;
+}
+
+/**
+ * @function replaceImport
+ * @param {Object} node
+ * @param {Array} media
+ * @param {Function} replace
+ * @param {Object} root
+ * @returns {string}
+ */
+function replaceImport(node, media, replace, root) {
+  if (replace) {
+    const returned = replace(node.value, media);
+
+    if (isVaildValue(returned)) {
+      node.value = encode(returned, node.type === 'word');
+    } else if (returned === false) {
+      root.remove();
+    }
+  }
+
+  return node.value;
+}
+
+/**
+ * @function parseUrl
+ * @param {Object} node
+ * @param {Array} media
+ * @param {Function} replace
+ * @returns {string}
+ */
+function parseUrl(node, media, replace, root) {
+  let url = '';
+
+  const { nodes } = node;
+
+  if (!nodes.length) return url;
+
+  [node] = nodes;
+
+  if (node.type === 'string') {
+    url = replaceImport(node, media, replace, root);
+  } else if (node.type === 'function' && node.value === 'url') {
+    [node] = node.nodes;
+
+    if (node) {
+      url = replaceImport(node, media, replace, root);
+    }
+  }
+
+  return url;
+}
+
+/**
+ * @function parseImport
+ * @param {Object} rule
+ * @param {Function} replace
+ * @returns {Array}
+ */
+function parseImport(rule, replace, options) {
+  const root = postcssValueParser(rule.params);
+
+  const media = options.media ? parseMedia(root) : [];
+  const path = parseUrl(root, media, replace, rule);
+  const code = postcssValueParser.stringify(root);
+
+  return { path, media, code };
+}
+
+/**
  * @module parse-assets
  * @license MIT
- * @version 2018/03/13
+ * @author nuintun
  */
 
 // CSS property with assets
@@ -113,74 +215,64 @@ function replaceAssets(node, onpath, prop) {
  * @param {Function} onpath
  */
 function parseAssets(rule, onpath) {
-  const prop = rule.prop;
+  const { prop } = rule;
 
   if (onpath && PROPS.has(prop.replace(/^-\w+-/, ''))) {
     const root = postcssValueParser(rule.value);
 
     root.walk(node => {
       if (node.type === 'function') {
+        const { nodes } = node;
+
         switch (node.value) {
           case 'url':
           case 'image':
-            // Get first param
-            node = node.nodes[0];
+            // Walk nodes
+            postcssValueParser.walk(nodes, node => {
+              const { type } = node;
 
-            // Get type
-            const type = node.type;
-
-            if (type === 'string' || type === 'word') {
-              replaceAssets(node, onpath, prop);
-            }
+              if (type === 'string' || type === 'word') {
+                replaceAssets(node, onpath, prop);
+              }
+            });
             break;
           case 'image-set':
-            node.nodes.forEach(node => {
-              if (node.type === 'function' && node.value === 'url') {
-                replaceAssets(node, onpath, prop);
+            postcssValueParser.walk(nodes, ({ type, value }) => {
+              if (type === 'function' && value === 'url') {
+                // Walk nodes
+                postcssValueParser.walk(node.nodes, node => {
+                  const { type } = node;
+
+                  if (type === 'string' || type === 'word') {
+                    replaceAssets(node, onpath, prop);
+                  }
+                });
               }
             });
             break;
           default:
             // AlphaImageLoader
             if (node.type === 'function' && /\.?AlphaImageLoader$/i.test(node.value)) {
-              console.log(node);
-              node.nodes.forEach(node => {
-                console.log(node);
+              let src = '';
+
+              postcssValueParser.walk(nodes, node => {
+                switch (node.type) {
+                  case 'word':
+                    src += node.value;
+                    break;
+                  case 'string':
+                    src === 'src=' && replaceAssets(node, onpath, prop);
+                  case 'div':
+                    src = '';
+                }
               });
-              // node.each(node => {
-              //   const value = node.value;
-              //   if (node.type === 'word' && /^src(?:\s*=|$)/.test(value)) {
-              //     if (value === 'src') {
-              //       node = node.next();
-              //       if (node) {
-              //         if (node.value === '=') {
-              //           node = node.next();
-              //           isAsset(node) && replaceAssets(node, onpath, prop);
-              //         } else {
-              //           const returned = onpath(value.slice(1), prop);
-              //           if (isVaildValue(returned)) {
-              //             node.value = `=${encode(returned, true)}`;
-              //           }
-              //         }
-              //       }
-              //     } else if (value === 'src=') {
-              //       node = node.next();
-              //       isAsset(node) && replaceAssets(node, onpath, prop);
-              //     } else {
-              //       const returned = onpath(value.slice(4), prop);
-              //       if (isVaildValue(returned)) {
-              //         node.value = `src=${encode(returned, true)}`;
-              //       }
-              //     }
-              //   }
-              // });
             }
             break;
         }
       }
     });
 
-    rule.value = root.toString();
+    rule.value = postcssValueParser.stringify(root);
   }
 }
 
@@ -204,7 +296,9 @@ function parser(code, replace, options) {
   const dependencies = [];
 
   // Is buffer
-  if (Buffer.isBuffer(code)) code = code.toString();
+  if (Buffer.isBuffer(code)) {
+    code = code.toString();
+  }
 
   if (replace && object(replace)) {
     options = replace;
@@ -219,7 +313,9 @@ function parser(code, replace, options) {
     return { code, dependencies };
   }
 
-  if (replace && !fn(replace)) replace = null;
+  if (replace && !fn(replace)) {
+    replace = null;
+  }
 
   const onpath = fn(options.onpath) ? options.onpath : null;
 
@@ -227,15 +323,13 @@ function parser(code, replace, options) {
     switch (node.type) {
       // At rule
       case 'atrule':
-        // if (node.name === 'import') {
-        //   const parsed = parseImport(node, replace, options);
-        //   const code = parsed.code;
-        //   const path = parsed.path;
-        //   const media = parsed.media;
+        if (node.name === 'import') {
+          const { code, path, media } = parseImport(node, replace, options);
 
-        //   dependencies.push({ path, media });
-        //   code ? (node.params = code) : node.remove();
-        // }
+          node.params = code;
+
+          dependencies.push({ path, media });
+        }
         break;
       // Declaration
       case 'decl':

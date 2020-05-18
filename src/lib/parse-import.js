@@ -1,40 +1,37 @@
 /**
  * @module parse-import
  * @license MIT
- * @version 2018/03/12
+ * @author nuintun
  */
 
 import { encode, isVaildValue } from './utils';
-import postcssValueParser from 'postcss-value-parser';
+import postcssValueParser, { stringify } from 'postcss-value-parser';
 
 /**
  * @function parseMedia
- * @param {Object} root
+ * @param {Object} node
  * @returns {Array}
  */
-function parseMedia(root) {
-  const media = [];
-
-  if (!root.nodes.length) return media;
-
+function parseMedia(node) {
   const start = 1;
-  const values = root.first.nodes;
+  const media = [];
+  const { nodes } = node;
 
-  if (values.length > start) {
-    const rest = values.reduce((item, node, index) => {
-      if (index < start) return '';
+  if (nodes.length <= start) return media;
 
-      if (node.type === 'comma') {
-        media.push(item.trim());
+  const rest = nodes.reduce((meta, node, index) => {
+    if (index < start) return '';
 
-        return '';
-      }
+    if (node.type === 'div') {
+      media.push(meta.trim());
 
-      return item + node;
-    }, '');
+      return '';
+    }
 
-    media.push(rest.trim());
-  }
+    return meta + stringify(node);
+  }, '');
+
+  media.push(rest.trim());
 
   return media;
 }
@@ -54,7 +51,7 @@ function replaceImport(node, media, replace, root) {
     if (isVaildValue(returned)) {
       node.value = encode(returned, node.type === 'word');
     } else if (returned === false) {
-      root.removeAll();
+      root.remove();
     }
   }
 
@@ -63,26 +60,28 @@ function replaceImport(node, media, replace, root) {
 
 /**
  * @function parseUrl
- * @param {Object} root
+ * @param {Object} node
  * @param {Array} media
  * @param {Function} replace
  * @returns {string}
  */
-function parseUrl(root, media, replace) {
+function parseUrl(node, media, replace, root) {
   let url = '';
 
-  if (!root.nodes.length) return url;
+  const { nodes } = node;
 
-  const values = root.first.nodes;
+  if (!nodes.length) return url;
 
-  if (!values.length) return url;
-
-  let node = values[0];
+  [node] = nodes;
 
   if (node.type === 'string') {
     url = replaceImport(node, media, replace, root);
-  } else if (node.type === 'func' && node.value === 'url') {
-    url = replaceImport(node.nodes[1], media, replace, root);
+  } else if (node.type === 'function' && node.value === 'url') {
+    [node] = node.nodes;
+
+    if (node) {
+      url = replaceImport(node, media, replace, root);
+    }
   }
 
   return url;
@@ -90,15 +89,16 @@ function parseUrl(root, media, replace) {
 
 /**
  * @function parseImport
- * @param {Object} node
+ * @param {Object} rule
  * @param {Function} replace
  * @returns {Array}
  */
-export default function parseImport(node, replace, options) {
-  const root = postcssValueParser(node.params);
+export default function parseImport(rule, replace, options) {
+  const root = postcssValueParser(rule.params);
+
   const media = options.media ? parseMedia(root) : [];
-  const path = parseUrl(root, media, replace);
-  const code = root.toString();
+  const path = parseUrl(root, media, replace, rule);
+  const code = stringify(root);
 
   return { path, media, code };
 }
