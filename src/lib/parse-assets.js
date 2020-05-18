@@ -78,24 +78,18 @@ export default function parseAssets(rule, onpath) {
             break;
           case 'image-set':
             node.nodes.forEach(node => {
-              console.log(node);
-              if(node.type === 'function' && node.value === 'url'){
+              if (node.type === 'function' && node.value === 'url') {
                 replaceAssets(node, onpath, prop);
               }
-              // if (node.type === 'string') {
-              //   const prev = node.prev();
-              //   const prevType = prev.type;
-              //   if (prevType === 'comma' || prevType === 'paren') {
-              //     replaceAssets(node, onpath, prop);
-              //   }
-              // }
             });
             break;
           default:
             // AlphaImageLoader
-            if (/\.?AlphaImageLoader$/i.test(node.value)) {
-              // console.log(node);
-
+            if (node.type === 'function' && /\.?AlphaImageLoader$/i.test(node.value)) {
+              console.log(node);
+              node.nodes.forEach(node => {
+                console.log(node);
+              });
               // node.each(node => {
               //   const value = node.value;
               //   if (node.type === 'word' && /^src(?:\s*=|$)/.test(value)) {
