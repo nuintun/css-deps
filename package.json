@@ -27,7 +27,7 @@
     "postcss-value-parser": "^4.1.0"
   },
   "devDependencies": {
-    "rollup": "^2.16.1"
+    "rollup": "^2.26.4"
   },
   "scripts": {
     "prepublishOnly": "npm run build",
