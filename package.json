@@ -23,7 +23,7 @@
     "dependencies"
   ],
   "dependencies": {
-    "postcss": "^7.0.32",
+    "postcss": "^8.1.4",
     "postcss-value-parser": "^4.1.0"
   },
   "devDependencies": {
