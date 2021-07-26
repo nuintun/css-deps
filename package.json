@@ -1,6 +1,6 @@
 {
   "name": "@nuintun/css-deps",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Transform css and get css dependences.",
   "author": {
     "name": "nuintun",
@@ -23,11 +23,11 @@
     "dependencies"
   ],
   "dependencies": {
-    "postcss": "^7.0.32",
+    "postcss": "^8.3.6",
     "postcss-value-parser": "^4.1.0"
   },
   "devDependencies": {
-    "rollup": "^2.26.4"
+    "rollup": "^2.54.0"
   },
   "scripts": {
     "prepublishOnly": "npm run build",
