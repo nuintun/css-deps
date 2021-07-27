@@ -2,7 +2,7 @@
  * @module @nuintun/css-deps
  * @author nuintun
  * @license MIT
- * @version 2.2.0
+ * @version 2.2.1
  * @description Transform css and get css dependences.
  * @see https://github.com/nuintun/css-deps#readme
  */
